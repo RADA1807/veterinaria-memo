@@ -1,18 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { v4: uuidv4 } = require('uuid');
 
-// 📋 Obtener todos los tratamientos (admin) o por mascota (propietario)
+// 📋 Obtener todos los tratamientos
 router.get('/', async (req, res) => {
   try {
     if (req.user.rol === 'admin') {
       const [rows] = await db.query(`
-        SELECT t.id, t.descripcion, t.fecha, t.costo,
+        SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario,
                m.nombre AS mascota_nombre, m.especie,
                p.nombre AS propietario_nombre
         FROM tratamientos t
-        INNER JOIN mascotas m ON t.mascota_id = m.id
+        INNER JOIN mascotas m ON t.paciente_id = m.id
         INNER JOIN propietarios p ON m.propietario_id = p.id
         ORDER BY t.fecha DESC
       `);
@@ -28,10 +27,10 @@ router.get('/', async (req, res) => {
       const propietarioId = propRows[0].id;
 
       const [rows] = await db.query(`
-        SELECT t.id, t.descripcion, t.fecha, t.costo,
+        SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario,
                m.nombre AS mascota_nombre
         FROM tratamientos t
-        INNER JOIN mascotas m ON t.mascota_id = m.id
+        INNER JOIN mascotas m ON t.paciente_id = m.id
         WHERE m.propietario_id = ?
         ORDER BY t.fecha DESC
       `, [propietarioId]);
@@ -50,9 +49,9 @@ router.get('/mascota/:mascotaId', async (req, res) => {
     const { mascotaId } = req.params;
 
     const [rows] = await db.query(`
-      SELECT t.id, t.descripcion, t.fecha, t.costo
+      SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario
       FROM tratamientos t
-      WHERE t.mascota_id = ?
+      WHERE t.paciente_id = ?
       ORDER BY t.fecha DESC
     `, [mascotaId]);
 
@@ -70,22 +69,20 @@ router.post('/', async (req, res) => {
       return res.status(403).json({ error: 'Solo el administrador puede registrar tratamientos' });
     }
 
-    const { mascota_id, descripcion, fecha, costo } = req.body;
+    const { paciente_id, tipo, descripcion, fecha, costo, veterinario } = req.body;
 
-    if (!mascota_id || !descripcion || !fecha) {
-      return res.status(400).json({ error: 'Mascota, descripción y fecha son obligatorios' });
+    if (!paciente_id || !tipo || !descripcion || !fecha) {
+      return res.status(400).json({ error: 'Mascota, tipo, descripción y fecha son obligatorios' });
     }
 
-    const id = uuidv4();
     await db.query(
-      `INSERT INTO tratamientos (id, mascota_id, descripcion, fecha, costo, fecha_creacion, fecha_actualizacion)
-       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [id, mascota_id, descripcion, fecha, costo || 0]
+      `INSERT INTO tratamientos (paciente_id, tipo, descripcion, fecha, costo, veterinario, fecha_creacion, fecha_actualizacion)
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [paciente_id, tipo, descripcion, fecha, costo || 0, veterinario || null]
     );
 
     res.status(201).json({
       message: '✅ Tratamiento registrado correctamente',
-      tratamientoId: id,
     });
   } catch (err) {
     console.error('❌ Error al registrar tratamiento:', err);
@@ -101,12 +98,12 @@ router.put('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
-    const { descripcion, fecha, costo } = req.body;
+    const { tipo, descripcion, fecha, costo, veterinario } = req.body;
 
     const [result] = await db.query(
-      `UPDATE tratamientos SET descripcion=?, fecha=?, costo=?, fecha_actualizacion=NOW()
+      `UPDATE tratamientos SET tipo=?, descripcion=?, fecha=?, costo=?, veterinario=?, fecha_actualizacion=NOW()
        WHERE id=?`,
-      [descripcion, fecha, costo || 0, id]
+      [tipo, descripcion, fecha, costo || 0, veterinario || null, id]
     );
 
     if (result.affectedRows === 0) {
