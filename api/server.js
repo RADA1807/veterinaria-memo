@@ -26,6 +26,7 @@ const mascotasRoutes = require('./routes/mascotas');
 const propietariosRoutes = require('./routes/propietarios');
 const tratamientosRoutes = require('./routes/tratamientos');
 const citasRoutes = require('./routes/citas');
+const serviciosRoutes = require('./routes/servicios');
 
 // Rutas públicas (sin token)
 app.use('/api', usuariosRoutes);
@@ -36,6 +37,7 @@ app.use('/api/citas', verifyToken, citasRoutes);
 
 // Rutas solo para admin
 app.use('/api/propietarios', verifyToken, checkRole('admin'), propietariosRoutes);
+app.use('/api/servicios', serviciosRoutes);
 app.use('/api/tratamientos', verifyToken, tratamientosRoutes);
 
 // Ruta base
