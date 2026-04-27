@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Veterinaria Memo",
+    "slug": "veterinaria-memo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#005F9E"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#005F9E"
+      },
+      "package": "com.veterinariamemo.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite acceder a tus fotos para subir imagen de tu mascota."
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "scheme": "veterinariamemo",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
