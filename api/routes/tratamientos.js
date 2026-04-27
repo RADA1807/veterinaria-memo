@@ -5,9 +5,9 @@ const db = require('../models/db');
 // 📋 Obtener todos los tratamientos
 router.get('/', async (req, res) => {
   try {
-    if (req.user.rol === 'admin') {
+    if (req.user.rol === 'admin' || req.user.rol === 'veterinario') {
       const [rows] = await db.query(`
-        SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario,
+        SELECT t.id, t.tipo, t.descripcion, t.costo, t.fecha, t.veterinario,
                m.nombre AS mascota_nombre, m.especie,
                p.nombre AS propietario_nombre
         FROM tratamientos t
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
       const propietarioId = propRows[0].id;
 
       const [rows] = await db.query(`
-        SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario,
+        SELECT t.id, t.tipo, t.descripcion, t.costo, t.fecha, t.veterinario,
                m.nombre AS mascota_nombre
         FROM tratamientos t
         INNER JOIN mascotas m ON t.paciente_id = m.id
@@ -47,14 +47,12 @@ router.get('/', async (req, res) => {
 router.get('/mascota/:mascotaId', async (req, res) => {
   try {
     const { mascotaId } = req.params;
-
     const [rows] = await db.query(`
-      SELECT t.id, t.tipo, t.descripcion, t.fecha, t.costo, t.veterinario
-      FROM tratamientos t
-      WHERE t.paciente_id = ?
-      ORDER BY t.fecha DESC
+      SELECT id, tipo, descripcion, costo, fecha, veterinario
+      FROM tratamientos
+      WHERE paciente_id = ?
+      ORDER BY fecha DESC
     `, [mascotaId]);
-
     res.json(rows);
   } catch (err) {
     console.error('❌ Error al obtener tratamientos:', err);
@@ -62,39 +60,37 @@ router.get('/mascota/:mascotaId', async (req, res) => {
   }
 });
 
-// ➕ Registrar tratamiento (solo admin)
+// ➕ Registrar tratamiento (solo admin o veterinario)
 router.post('/', async (req, res) => {
   try {
-    if (req.user.rol !== 'admin') {
-      return res.status(403).json({ error: 'Solo el administrador puede registrar tratamientos' });
+    if (req.user.rol !== 'admin' && req.user.rol !== 'veterinario') {
+      return res.status(403).json({ error: 'Sin permisos para registrar tratamientos' });
     }
 
     const { paciente_id, tipo, descripcion, fecha, costo, veterinario } = req.body;
 
-    if (!paciente_id || !tipo || !descripcion || !fecha) {
-      return res.status(400).json({ error: 'Mascota, tipo, descripción y fecha son obligatorios' });
+    if (!paciente_id || !tipo || !fecha) {
+      return res.status(400).json({ error: 'Paciente, tipo y fecha son obligatorios' });
     }
 
     await db.query(
       `INSERT INTO tratamientos (paciente_id, tipo, descripcion, fecha, costo, veterinario, fecha_creacion, fecha_actualizacion)
        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [paciente_id, tipo, descripcion, fecha, costo || 0, veterinario || null]
+      [paciente_id, tipo, descripcion || '', fecha, costo || 0, veterinario || '']
     );
 
-    res.status(201).json({
-      message: '✅ Tratamiento registrado correctamente',
-    });
+    res.status(201).json({ message: '✅ Tratamiento registrado correctamente' });
   } catch (err) {
     console.error('❌ Error al registrar tratamiento:', err);
     res.status(500).json({ error: 'Error al registrar tratamiento' });
   }
 });
 
-// ✏️ Actualizar tratamiento (solo admin)
+// ✏️ Actualizar tratamiento (solo admin o veterinario)
 router.put('/:id', async (req, res) => {
   try {
-    if (req.user.rol !== 'admin') {
-      return res.status(403).json({ error: 'Solo el administrador puede actualizar tratamientos' });
+    if (req.user.rol !== 'admin' && req.user.rol !== 'veterinario') {
+      return res.status(403).json({ error: 'Sin permisos para actualizar tratamientos' });
     }
 
     const { id } = req.params;
@@ -103,7 +99,7 @@ router.put('/:id', async (req, res) => {
     const [result] = await db.query(
       `UPDATE tratamientos SET tipo=?, descripcion=?, fecha=?, costo=?, veterinario=?, fecha_actualizacion=NOW()
        WHERE id=?`,
-      [tipo, descripcion, fecha, costo || 0, veterinario || null, id]
+      [tipo, descripcion || '', fecha, costo || 0, veterinario || '', id]
     );
 
     if (result.affectedRows === 0) {
@@ -125,10 +121,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
-    const [result] = await db.query(
-      'DELETE FROM tratamientos WHERE id = ?',
-      [id]
-    );
+    const [result] = await db.query('DELETE FROM tratamientos WHERE id = ?', [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Tratamiento no encontrado' });
