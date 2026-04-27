@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { COLORS } from '../../config';
 import { useAuth } from '../../context/AuthContext';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, Image } from 'react-native';
 
 export default function TabLayout() {
   const { logout, usuario } = useAuth();
@@ -9,7 +9,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: COLORS.teal,
         tabBarInactiveTintColor: COLORS.gray,
         tabBarStyle: {
           backgroundColor: COLORS.white,
@@ -24,28 +24,47 @@ export default function TabLayout() {
         },
         header: () => (
           <View style={{
-            backgroundColor: COLORS.primary,
+            backgroundColor: COLORS.white,
             paddingTop: 50,
-            paddingBottom: 14,
+            paddingBottom: 12,
             paddingHorizontal: 20,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            borderBottomWidth: 3,
+            borderBottomColor: COLORS.teal,
           }}>
-            <View>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
-                Veterinaria Memo
+            {/* Logo a la izquierda */}
+            <Image
+              source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+              style={{ width: 90, height: 90 }}
+              resizeMode="contain"
+            />
+
+            {/* Saludo al centro */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{
+                color: COLORS.textSecondary,
+                fontSize: 12,
+              }}>
+                Bienvenido
               </Text>
-              <Text style={{ color: COLORS.white, fontSize: 16, fontWeight: 'bold' }}>
-                Hola, {usuario?.nombre?.split(' ')[0]} 👋
+              <Text style={{
+                color: COLORS.primary,
+                fontSize: 15,
+                fontWeight: 'bold',
+              }}>
+                {usuario?.nombre?.split(' ')[0]} 👋
               </Text>
             </View>
+
+            {/* Botón salir a la derecha */}
             <TouchableOpacity
               onPress={logout}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: COLORS.secondary,
                 paddingHorizontal: 14,
-                paddingVertical: 7,
+                paddingVertical: 8,
                 borderRadius: 20,
               }}
             >

@@ -10,7 +10,7 @@ import { Cita } from '../../types';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { token, usuario, mascotas } = useAuth();
+  const { token, mascotas } = useAuth();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -66,12 +66,12 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.container}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.teal]} />
       }
     >
       {/* Próxima cita */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Próxima cita</Text>
+        <Text style={styles.sectionTitle}>📅 Próxima cita</Text>
         {proximaCita ? (
           <View style={styles.citaCard}>
             <View style={styles.citaHeader}>
@@ -103,7 +103,7 @@ export default function HomeScreen() {
       {/* Mis mascotas */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Mis mascotas</Text>
+          <Text style={styles.sectionTitle}>🐾 Mis mascotas</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/mascotas')}>
             <Text style={styles.sectionLink}>Ver todas</Text>
           </TouchableOpacity>
@@ -140,7 +140,7 @@ export default function HomeScreen() {
 
       {/* Accesos rápidos */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Accesos rápidos</Text>
+        <Text style={styles.sectionTitle}>⚡ Accesos rápidos</Text>
         <View style={styles.quickGrid}>
           <TouchableOpacity
             style={styles.quickBtn}
@@ -188,16 +188,33 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   section: { padding: 16, marginBottom: 4 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: 'bold', color: COLORS.text, marginBottom: 12 },
-  sectionLink: { fontSize: 13, color: COLORS.primary, fontWeight: '500' },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  sectionLink: { fontSize: 13, color: COLORS.teal, fontWeight: '500' },
   citaCard: {
     backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 16,
     elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.teal,
   },
-  citaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  citaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   citaMascota: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
   estadoBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   estadoText: { fontSize: 12, fontWeight: '500' },
@@ -214,7 +231,7 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 40, marginBottom: 8 },
   emptyText: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 12 },
   emptyButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -228,6 +245,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 120,
     elevation: 2,
+    borderTopWidth: 3,
+    borderTopColor: COLORS.secondary,
   },
   mascotaIcon: { fontSize: 36, marginBottom: 8 },
   mascotaNombre: { fontSize: 14, fontWeight: 'bold', color: COLORS.text, textAlign: 'center' },
@@ -241,16 +260,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '47%',
     elevation: 2,
+    borderBottomWidth: 3,
+    borderBottomColor: COLORS.teal,
   },
   quickIcon: { fontSize: 28, marginBottom: 6 },
   quickText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
   infoCard: {
-    backgroundColor: COLORS.primaryLight,
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 30,
-  },
-  infoTitle: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary, marginBottom: 8 },
-  infoText: { fontSize: 13, color: COLORS.primary, marginBottom: 4 },
+  backgroundColor: COLORS.teal,
+  margin: 16,
+  borderRadius: 12,
+  padding: 16,
+  marginBottom: 30,
+  alignItems: 'center',
+},
+infoTitle: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: COLORS.white,
+  marginBottom: 10,
+},
+infoText: {
+  fontSize: 13,
+  color: 'rgba(255,255,255,0.9)',
+  marginBottom: 4,
+},
 });
