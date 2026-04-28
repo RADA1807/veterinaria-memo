@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, ActivityIndicator, Alert
+  StyleSheet, ScrollView, ActivityIndicator, Image
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
@@ -45,7 +45,7 @@ export default function PerfilScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        setErrors({ success: '✅ Perfil actualizado correctamente' });
+        setErrors({ success: 'Perfil actualizado correctamente' });
       } else {
         setErrors({ general: data.error || 'Error al actualizar' });
       }
@@ -56,42 +56,30 @@ export default function PerfilScreen() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Eliminar cuenta',
-      '¿Estás seguro? Esta acción eliminará tu cuenta y todas tus mascotas y citas. No se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const response = await fetch(`${API_URL}/delete`, {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              if (response.ok) {
-                await logout();
-              } else {
-                Alert.alert('Error', 'No se pudo eliminar la cuenta');
-              }
-            } catch (error) {
-              Alert.alert('Error', 'Error de conexión');
-            }
-          },
+  const handleDeleteAccount = async () => {
+    if (!confirm('¿Estás seguro? Esta acción eliminará tu cuenta, mascotas y citas. No se puede deshacer.')) return;
+    try {
+      const response = await fetch(`${API_URL}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-      ]
-    );
+      });
+      if (response.ok) {
+        await logout();
+      } else {
+        setErrors({ general: 'No se pudo eliminar la cuenta' });
+      }
+    } catch (error) {
+      setErrors({ general: 'Error de conexión' });
+    }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
-      {/* Avatar */}
+      {/* Header de perfil */}
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -101,8 +89,9 @@ export default function PerfilScreen() {
         <Text style={styles.avatarNombre}>{usuario?.nombre}</Text>
         <Text style={styles.avatarEmail}>{usuario?.email}</Text>
         <View style={styles.rolBadge}>
-          <Text style={styles.rolText}>👤 Propietario</Text>
+          <Text style={styles.rolText}>Propietario</Text>
         </View>
+        <View style={styles.waveLine} />
       </View>
 
       {/* Form */}
@@ -111,7 +100,7 @@ export default function PerfilScreen() {
 
         {errors.general && (
           <View style={styles.errorBox}>
-            <Text style={styles.errorBoxText}>⚠️ {errors.general}</Text>
+            <Text style={styles.errorBoxText}>{errors.general}</Text>
           </View>
         )}
 
@@ -171,11 +160,11 @@ export default function PerfilScreen() {
       {/* Acciones de cuenta */}
       <View style={styles.accountActions}>
         <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-          <Text style={styles.logoutText}>🚪 Cerrar sesión</Text>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
-          <Text style={styles.deleteText}>🗑️ Eliminar cuenta</Text>
+          <Text style={styles.deleteText}>Eliminar cuenta</Text>
         </TouchableOpacity>
       </View>
 
@@ -187,30 +176,41 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   scroll: { paddingBottom: 40 },
   avatarSection: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     alignItems: 'center',
-    paddingVertical: 30,
+    paddingTop: 10,
+    paddingBottom: 0,
     paddingHorizontal: 20,
   },
+ 
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: COLORS.teal,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    borderWidth: 3,
+    borderColor: COLORS.tealLight,
   },
   avatarText: { fontSize: 36, color: COLORS.white, fontWeight: 'bold' },
-  avatarNombre: { fontSize: 20, fontWeight: 'bold', color: COLORS.white, marginBottom: 4 },
-  avatarEmail: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 10 },
+  avatarNombre: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary, marginBottom: 4 },
+  avatarEmail: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 10 },
   rolBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: COLORS.tealLight,
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 20,
+    marginBottom: 16,
   },
-  rolText: { color: COLORS.white, fontSize: 13 },
+  rolText: { color: COLORS.teal, fontSize: 13, fontWeight: '500' },
+  waveLine: {
+    width: '120%',
+    height: 4,
+    backgroundColor: COLORS.teal,
+    borderRadius: 2,
+  },
   form: {
     backgroundColor: COLORS.white,
     margin: 16,
@@ -224,6 +224,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.danger,
   },
   errorBoxText: { color: COLORS.danger, fontSize: 14 },
   successBox: {
@@ -231,6 +233,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.success,
   },
   successBoxText: { color: COLORS.success, fontSize: 14 },
   inputGroup: { marginBottom: 16 },
@@ -248,7 +252,7 @@ const styles = StyleSheet.create({
   inputError: { borderColor: COLORS.danger },
   errorText: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -263,13 +267,17 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.teal,
   },
-  logoutText: { color: COLORS.primary, fontSize: 15, fontWeight: '500' },
+  logoutText: { color: COLORS.teal, fontSize: 15, fontWeight: '500' },
   deleteBtn: {
     backgroundColor: COLORS.dangerLight,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.danger,
   },
   deleteText: { color: COLORS.danger, fontSize: 15, fontWeight: '500' },
 });
