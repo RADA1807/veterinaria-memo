@@ -2,21 +2,18 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator,
-  Alert, Platform
+  Alert, Image
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
-import { Mascota, Servicio } from '../../types';
+import { Servicio } from '../../types';
 
 export default function RegisterCitaScreen() {
   const router = useRouter();
   const { token, mascotas } = useAuth();
-  const { mascotaId, mascotaNombre } = useLocalSearchParams<{
-    mascotaId?: string;
-    mascotaNombre?: string;
-  }>();
+  const { mascotaId } = useLocalSearchParams<{ mascotaId?: string }>();
 
   const [selectedMascota, setSelectedMascota] = useState<string>(mascotaId || '');
   const [selectedServicio, setSelectedServicio] = useState('');
@@ -50,13 +47,8 @@ export default function RegisterCitaScreen() {
     fetchServicios();
   }, []);
 
-  const formatFecha = (date: Date) => {
-    return date.toISOString().split('T')[0];
-  };
-
-  const formatHora = (date: Date) => {
-    return date.toTimeString().split(' ')[0].substring(0, 5);
-  };
+  const formatFecha = (date: Date) => date.toISOString().split('T')[0];
+  const formatHora = (date: Date) => date.toTimeString().split(' ')[0].substring(0, 5);
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -108,13 +100,22 @@ export default function RegisterCitaScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Volver</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Solicitar cita</Text>
-        <Text style={styles.subtitle}>Veterinaria Memo · Lunes a Sábado 7am-6pm</Text>
-      </View>
+      {/* Header blanco con logo */}
+   <View style={styles.header}>
+  <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+    <Text style={styles.backText}>← Volver</Text>
+  </TouchableOpacity>
+  <View style={styles.logoContainer}>
+    <Image
+      source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+      style={styles.logo}
+      resizeMode="contain"
+    />
+    <Text style={styles.title}>Solicitar cita</Text>
+    <Text style={styles.subtitle}>Veterinaria Memo · Lunes a Sábado 7am-6pm</Text>
+  </View>
+  <View style={styles.waveLine} />
+</View>
 
       <View style={styles.form}>
 
@@ -171,11 +172,8 @@ export default function RegisterCitaScreen() {
         {/* Fecha */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>📅 Fecha</Text>
-          <TouchableOpacity
-            style={styles.dateBtn}
-            onPress={() => setShowFecha(true)}
-          >
-            <Text style={styles.dateBtnText}>{formatFecha(fecha)}</Text>
+          <TouchableOpacity style={styles.dateBtn} onPress={() => setShowFecha(true)}>
+            <Text style={styles.dateBtnText}>📅 {formatFecha(fecha)}</Text>
           </TouchableOpacity>
           {showFecha && (
             <DateTimePicker
@@ -193,11 +191,8 @@ export default function RegisterCitaScreen() {
         {/* Hora */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>⏰ Hora</Text>
-          <TouchableOpacity
-            style={styles.dateBtn}
-            onPress={() => setShowHora(true)}
-          >
-            <Text style={styles.dateBtnText}>{formatHora(hora)}</Text>
+          <TouchableOpacity style={styles.dateBtn} onPress={() => setShowHora(true)}>
+            <Text style={styles.dateBtnText}>⏰ {formatHora(hora)}</Text>
           </TouchableOpacity>
           {showHora && (
             <DateTimePicker
@@ -246,16 +241,39 @@ export default function RegisterCitaScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   scroll: { paddingBottom: 40 },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 50,
-    paddingBottom: 24,
+header: {
+    backgroundColor: COLORS.white,
+    paddingTop: 10,
+    paddingBottom: 0,
     paddingHorizontal: 20,
   },
-  backBtn: { marginBottom: 12 },
-  backText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.white, marginBottom: 4 },
-  subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)' },
+  backBtn: {
+    marginBottom: 4,
+  },
+ backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logo: { width: 80, height: 80, marginBottom: 4 },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+subtitle: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  waveLine: {
+    width: '100%',
+    height: 4,
+    backgroundColor: COLORS.teal,
+    borderRadius: 2,
+  },
   form: {
     backgroundColor: COLORS.white,
     margin: 16,
@@ -283,8 +301,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
+    borderColor: COLORS.teal,
   },
   optionIcon: { fontSize: 20, marginBottom: 4 },
   optionText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
@@ -292,13 +310,13 @@ const styles = StyleSheet.create({
   optionDuracion: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
   dateBtn: {
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
+    borderColor: COLORS.teal,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: COLORS.grayLight,
+    backgroundColor: COLORS.tealLight,
   },
-  dateBtnText: { fontSize: 15, color: COLORS.text },
+  dateBtnText: { fontSize: 15, color: COLORS.teal, fontWeight: '500' },
   input: {
     borderWidth: 1,
     borderColor: COLORS.grayBorder,
@@ -313,7 +331,7 @@ const styles = StyleSheet.create({
   inputError: { borderColor: COLORS.danger },
   errorText: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

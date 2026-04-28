@@ -23,7 +23,8 @@ export default function CitasScreen() {
       });
       if (response.ok) {
         const data = await response.json();
-        setCitas(data);
+        // Filtrar filas con ID válido
+        setCitas(Array.isArray(data) ? data.filter((c: Cita) => c.id) : []);
       }
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -94,7 +95,7 @@ export default function CitasScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={COLORS.teal} />
         <Text style={styles.loadingText}>Cargando citas...</Text>
       </View>
     );
@@ -106,7 +107,7 @@ export default function CitasScreen() {
         data={citas}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.teal]} />
         }
         ListHeaderComponent={
           <TouchableOpacity
@@ -123,41 +124,44 @@ export default function CitasScreen() {
             <Text style={styles.emptyText}>Solicita una cita para tu mascota</Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardMascota}>🐾 {item.mascota_nombre}</Text>
-              <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(item.estado) + '20' }]}>
-                <Text style={[styles.estadoText, { color: getEstadoColor(item.estado) }]}>
-                  {getEstadoLabel(item.estado)}
-                </Text>
+        renderItem={({ item }) => {
+          if (!item.id) return null;
+          return (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardMascota}>🐾 {item.mascota_nombre}</Text>
+                <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(item.estado) + '20' }]}>
+                  <Text style={[styles.estadoText, { color: getEstadoColor(item.estado) }]}>
+                    {getEstadoLabel(item.estado)}
+                  </Text>
+                </View>
               </View>
-            </View>
 
-            <View style={styles.cardBody}>
-              <Text style={styles.cardServicio}>💉 {item.servicio}</Text>
-              <Text style={styles.cardFecha}>📅 {item.fecha} · ⏰ {item.hora}</Text>
-              <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
-            </View>
-
-            {item.estado === 'pendiente' && (
-              <View style={styles.cardActions}>
-                <TouchableOpacity
-                  style={[styles.actionBtn, styles.editBtn]}
-                  onPress={() => router.push(`/citas/edit/${item.id}`)}
-                >
-                  <Text style={styles.actionBtnText}>✏️ Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionBtn, styles.cancelBtn]}
-                  onPress={() => handleCancelar(item.id)}
-                >
-                  <Text style={styles.actionBtnText}>❌ Cancelar</Text>
-                </TouchableOpacity>
+              <View style={styles.cardBody}>
+                <Text style={styles.cardServicio}>💉 {item.servicio}</Text>
+                <Text style={styles.cardFecha}>📅 {item.fecha} · ⏰ {item.hora}</Text>
+                <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
               </View>
-            )}
-          </View>
-        )}
+
+              {item.estado === 'pendiente' && (
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.editBtn]}
+                    onPress={() => router.push(`/citas/edit/${item.id}`)}
+                  >
+                    <Text style={styles.actionBtnText}>✏️ Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.cancelBtn]}
+                    onPress={() => handleCancelar(item.id)}
+                  >
+                    <Text style={styles.actionBtnText}>❌ Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          );
+        }}
         contentContainerStyle={styles.list}
       />
     </View>
@@ -170,7 +174,7 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, color: COLORS.textSecondary },
   list: { padding: 16 },
   addButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -187,6 +191,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.teal,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -208,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  editBtn: { backgroundColor: COLORS.warning },
+  editBtn: { backgroundColor: COLORS.secondary },
   cancelBtn: { backgroundColor: COLORS.danger },
   actionBtnText: { color: COLORS.white, fontSize: 13, fontWeight: '500' },
 });
