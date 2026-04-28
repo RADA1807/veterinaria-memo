@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, Alert, RefreshControl,
-  ActivityIndicator
+  ActivityIndicator, Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -86,7 +86,7 @@ export default function MascotasScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={COLORS.teal} />
         <Text style={styles.loadingText}>Cargando mascotas...</Text>
       </View>
     );
@@ -98,7 +98,7 @@ export default function MascotasScreen() {
         data={mascotas}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.teal]} />
         }
         ListHeaderComponent={
           <TouchableOpacity
@@ -118,9 +118,17 @@ export default function MascotasScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <View style={styles.cardIconContainer}>
-                <Text style={styles.cardIcon}>{getMascotaIcon(item.especie)}</Text>
-              </View>
+              {/* Foto o ícono de mascota */}
+              {item.foto ? (
+                <Image
+                  source={{ uri: item.foto }}
+                  style={styles.cardFoto}
+                />
+              ) : (
+                <View style={styles.cardIconContainer}>
+                  <Text style={styles.cardIcon}>{getMascotaIcon(item.especie)}</Text>
+                </View>
+              )}
               <View style={styles.cardInfo}>
                 <Text style={styles.cardNombre}>{item.nombre}</Text>
                 <Text style={styles.cardEspecie}>{item.especie} · {item.raza}</Text>
@@ -130,7 +138,7 @@ export default function MascotasScreen() {
 
             {item.historial_medico ? (
               <View style={styles.historialContainer}>
-                <Text style={styles.historialLabel}>📋 Historial médico</Text>
+                <Text style={styles.historialLabel}>Historial médico</Text>
                 <Text style={styles.historialText}>{item.historial_medico}</Text>
               </View>
             ) : null}
@@ -140,19 +148,19 @@ export default function MascotasScreen() {
                 style={[styles.actionBtn, styles.citaBtn]}
                 onPress={() => router.push(`/citas/register?mascotaId=${item.id}&mascotaNombre=${item.nombre}`)}
               >
-                <Text style={styles.actionBtnText}>📅 Pedir cita</Text>
+                <Text style={styles.actionBtnText}>Pedir cita</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.editBtn]}
                 onPress={() => router.push(`/mascotas/edit/${item.id}`)}
               >
-                <Text style={styles.actionBtnText}>✏️ Editar</Text>
+                <Text style={styles.actionBtnText}>Editar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.deleteBtn]}
                 onPress={() => handleDelete(item.id, item.nombre)}
               >
-                <Text style={styles.actionBtnText}>🗑️</Text>
+                <Text style={styles.actionBtnText}>Eliminar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -168,13 +176,13 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, color: COLORS.textSecondary },
   list: { padding: 16 },
- addButton: {
-  backgroundColor: COLORS.teal,
-  borderRadius: 12,
-  paddingVertical: 14,
-  alignItems: 'center',
-  marginBottom: 16,
-},
+  addButton: {
+    backgroundColor: COLORS.teal,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   addButtonText: { color: COLORS.white, fontSize: 15, fontWeight: 'bold' },
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
   emptyIcon: { fontSize: 60, marginBottom: 16 },
@@ -186,18 +194,30 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.teal,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  cardFoto: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: COLORS.teal,
+  },
   cardIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primaryLight,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.tealLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: COLORS.teal,
   },
-  cardIcon: { fontSize: 28 },
+  cardIcon: { fontSize: 30 },
   cardInfo: { flex: 1 },
   cardNombre: { fontSize: 18, fontWeight: 'bold', color: COLORS.text },
   cardEspecie: { fontSize: 13, color: COLORS.textSecondary },
@@ -217,8 +237,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-citaBtn: { backgroundColor: COLORS.teal },
-editBtn: { backgroundColor: COLORS.secondary },
-deleteBtn: { backgroundColor: COLORS.danger, flex: 0, paddingHorizontal: 16 },
+  citaBtn: { backgroundColor: COLORS.teal },
+  editBtn: { backgroundColor: COLORS.secondary },
+  deleteBtn: { backgroundColor: COLORS.danger },
   actionBtnText: { color: COLORS.white, fontSize: 13, fontWeight: '500' },
 });
