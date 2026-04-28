@@ -8,9 +8,11 @@ const SERVICIOS_DISPONIBLES = [
   'Consulta veterinaria',
   'Ultrasonido',
   'Rayos X',
-  'Cirugía',
   'Grooming',
-  'Hemogramas'
+  'Hemogramas',
+  'Limpieza dental',
+  'Nutrición animal',
+  'Farmacia'
 ];
 
 // 📅 Crear cita
