@@ -1,18 +1,33 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, RefreshControl
+  TouchableOpacity, RefreshControl, Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
-import { Cita } from '../../types';
+import { Cita, Mascota } from '../../types';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { token, mascotas } = useAuth();
+  const { token } = useAuth();
+  const [mascotas, setMascotas] = useState<Mascota[]>([]);
   const [citas, setCitas] = useState<Cita[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const fetchMascotas = async () => {
+    try {
+      const response = await fetch(`${API_URL}/mascotas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMascotas(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar mascotas:', error);
+    }
+  };
 
   const fetchCitas = async () => {
     try {
@@ -21,7 +36,7 @@ export default function HomeScreen() {
       });
       if (response.ok) {
         const data = await response.json();
-        setCitas(data);
+        setCitas(data.filter((c: Cita) => c.id));
       }
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -31,11 +46,13 @@ export default function HomeScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchCitas();
+    await fetchMascotas();
     setRefreshing(false);
   };
 
   useEffect(() => {
     fetchCitas();
+    fetchMascotas();
   }, []);
 
   const citasPendientes = citas.filter(c => c.estado === 'pendiente');
@@ -62,6 +79,16 @@ export default function HomeScreen() {
     }
   };
 
+  const getMascotaIcon = (especie: string) => {
+    switch (especie) {
+      case 'Gato': return '🐱';
+      case 'Ave': return '🐦';
+      case 'Conejo': return '🐰';
+      case 'Reptil': return '🦎';
+      default: return '🐶';
+    }
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -71,20 +98,20 @@ export default function HomeScreen() {
     >
       {/* Próxima cita */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📅 Próxima cita</Text>
+        <Text style={styles.sectionTitle}>Próxima cita</Text>
         {proximaCita ? (
           <View style={styles.citaCard}>
             <View style={styles.citaHeader}>
-              <Text style={styles.citaMascota}>🐾 {proximaCita.mascota_nombre}</Text>
+              <Text style={styles.citaMascota}>{proximaCita.mascota_nombre}</Text>
               <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(proximaCita.estado) + '20' }]}>
                 <Text style={[styles.estadoText, { color: getEstadoColor(proximaCita.estado) }]}>
                   {getEstadoLabel(proximaCita.estado)}
                 </Text>
               </View>
             </View>
-            <Text style={styles.citaServicio}>💉 {proximaCita.servicio}</Text>
-            <Text style={styles.citaFecha}>📅 {proximaCita.fecha} · ⏰ {proximaCita.hora}</Text>
-            <Text style={styles.citaMotivo}>📝 {proximaCita.motivo}</Text>
+            <Text style={styles.citaServicio}>{proximaCita.servicio}</Text>
+            <Text style={styles.citaFecha}>{proximaCita.fecha?.split('T')[0]} · {proximaCita.hora}</Text>
+            <Text style={styles.citaMotivo}>{proximaCita.motivo}</Text>
           </View>
         ) : (
           <View style={styles.emptyCard}>
@@ -103,7 +130,7 @@ export default function HomeScreen() {
       {/* Mis mascotas */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🐾 Mis mascotas</Text>
+          <Text style={styles.sectionTitle}>Mis mascotas</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/mascotas')}>
             <Text style={styles.sectionLink}>Ver todas</Text>
           </TouchableOpacity>
@@ -113,11 +140,16 @@ export default function HomeScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {mascotas.map((mascota) => (
               <View key={mascota.id} style={styles.mascotaCard}>
-                <Text style={styles.mascotaIcon}>
-                  {mascota.especie === 'Gato' ? '🐱' :
-                   mascota.especie === 'Ave' ? '🐦' :
-                   mascota.especie === 'Conejo' ? '🐰' : '🐶'}
-                </Text>
+                {mascota.foto ? (
+                  <Image
+                    source={{ uri: mascota.foto }}
+                    style={styles.mascotaFoto}
+                  />
+                ) : (
+                  <Text style={styles.mascotaIcon}>
+                    {getMascotaIcon(mascota.especie)}
+                  </Text>
+                )}
                 <Text style={styles.mascotaNombre}>{mascota.nombre}</Text>
                 <Text style={styles.mascotaEspecie}>{mascota.especie}</Text>
                 <Text style={styles.mascotaRaza}>{mascota.raza}</Text>
@@ -140,7 +172,7 @@ export default function HomeScreen() {
 
       {/* Accesos rápidos */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>⚡ Accesos rápidos</Text>
+        <Text style={styles.sectionTitle}>Accesos rápidos</Text>
         <View style={styles.quickGrid}>
           <TouchableOpacity
             style={styles.quickBtn}
@@ -175,9 +207,9 @@ export default function HomeScreen() {
 
       {/* Info veterinaria */}
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>🏥 Veterinaria Memo</Text>
+        <Text style={styles.infoTitle}>Veterinaria Memo</Text>
         <Text style={styles.infoText}>📞 8703-4402</Text>
-        <Text style={styles.infoText}>🕐 Lunes a Sábado: 7:00am – 6:00pm</Text>
+        <Text style={styles.infoText}>Lunes a Sábado: 7:00am – 6:00pm</Text>
         <Text style={styles.infoText}>📍 Costa Rica</Text>
       </View>
 
@@ -248,6 +280,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 3,
     borderTopColor: COLORS.secondary,
   },
+  mascotaFoto: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: COLORS.teal,
+  },
   mascotaIcon: { fontSize: 36, marginBottom: 8 },
   mascotaNombre: { fontSize: 14, fontWeight: 'bold', color: COLORS.text, textAlign: 'center' },
   mascotaEspecie: { fontSize: 12, color: COLORS.textSecondary },
@@ -266,22 +306,22 @@ const styles = StyleSheet.create({
   quickIcon: { fontSize: 28, marginBottom: 6 },
   quickText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
   infoCard: {
-  backgroundColor: COLORS.teal,
-  margin: 16,
-  borderRadius: 12,
-  padding: 16,
-  marginBottom: 30,
-  alignItems: 'center',
-},
-infoTitle: {
-  fontSize: 16,
-  fontWeight: 'bold',
-  color: COLORS.white,
-  marginBottom: 10,
-},
-infoText: {
-  fontSize: 13,
-  color: 'rgba(255,255,255,0.9)',
-  marginBottom: 4,
-},
+    backgroundColor: COLORS.teal,
+    margin: 16,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    marginBottom: 10,
+  },
+  infoText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 4,
+  },
 });

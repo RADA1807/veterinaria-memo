@@ -190,13 +190,14 @@ export default function EditMascotaScreen() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        await refreshMascotas();
-        setSuccess(true);
-        setTimeout(() => {
-          router.replace('/(tabs)/mascotas');
-        }, 2000);
-      } else {
+     if (response.ok) {
+  await refreshMascotas();
+  await fetchMascota();
+  setSuccess(true);
+  setTimeout(() => {
+    router.replace('/(tabs)/mascotas');
+  }, 2000);
+} else {
         setErrors({ general: data.error || 'Error al actualizar mascota' });
       }
     } catch (error) {

@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data: AuthResponse = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.token || 'Error al iniciar sesión');
+      throw new Error(data.error || 'Error al iniciar sesión');
     }
 
     const usuarioData = {

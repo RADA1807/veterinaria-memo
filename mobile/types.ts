@@ -66,8 +66,8 @@ export interface AuthResponse {
   telefono?: string;
   rol: string;
   mascotas: Mascota[];
+  error?: string;
 }
-
 export interface Mascota {
   id: string;
   nombre: string;
