@@ -18,6 +18,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// ✅ Body parsing ANTES de las rutas
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Importar middlewares
 const verifyToken = require('./middlewares/verifyToken');
 const checkRole = require('./middlewares/checkRole');
