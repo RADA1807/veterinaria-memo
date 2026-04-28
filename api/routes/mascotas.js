@@ -16,14 +16,13 @@ router.get('/', async (req, res) => {
       }
       const propietarioId = propRows[0].id;
       const [rows] = await db.query(
-        'SELECT id, nombre, especie, raza, edad, historial_medico FROM mascotas WHERE propietario_id = ?',
+        'SELECT id, nombre, especie, raza, edad, historial_medico, foto FROM mascotas WHERE propietario_id = ?',
         [propietarioId]
       );
       return res.json(rows);
     } else {
-      // Admin ve todas las mascotas con nombre del propietario
       const [rows] = await db.query(`
-        SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.historial_medico,
+        SELECT m.id, m.nombre, m.especie, m.raza, m.edad, m.historial_medico, m.foto,
                p.nombre AS propietario_nombre, p.correo AS propietario_email
         FROM mascotas m
         INNER JOIN propietarios p ON m.propietario_id = p.id
@@ -52,7 +51,7 @@ router.get('/:id', async (req, res) => {
       }
       const propietarioId = propRows[0].id;
       const [rows] = await db.query(
-        'SELECT * FROM mascotas WHERE id = ? AND propietario_id = ?',
+        'SELECT id, nombre, especie, raza, edad, historial_medico, foto FROM mascotas WHERE id = ? AND propietario_id = ?',
         [id, propietarioId]
       );
       if (rows.length === 0) {
@@ -61,7 +60,7 @@ router.get('/:id', async (req, res) => {
       return res.json(rows[0]);
     } else {
       const [rows] = await db.query(
-        'SELECT * FROM mascotas WHERE id = ?',
+        'SELECT id, nombre, especie, raza, edad, historial_medico, foto FROM mascotas WHERE id = ?',
         [id]
       );
       if (rows.length === 0) {
