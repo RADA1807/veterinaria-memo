@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, ActivityIndicator, Alert
+  StyleSheet, ScrollView, ActivityIndicator, Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -16,6 +16,7 @@ export default function RegisterMascotaScreen() {
   const [edad, setEdad] = useState('');
   const [historial, setHistorial] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     nombre?: string;
     especie?: string;
@@ -59,9 +60,11 @@ export default function RegisterMascotaScreen() {
 
       if (response.ok) {
         await refreshMascotas();
-        Alert.alert('✅ Mascota registrada', `${nombre} ha sido registrada correctamente.`, [
-          { text: 'Aceptar', onPress: () => router.replace('/(tabs)/mascotas') },
-        ]);
+        setSuccess(true);
+        // Redirigir a editar para que pueda subir la foto
+        setTimeout(() => {
+          router.replace(`/mascotas/edit/${data.mascotaId}`);
+        }, 2000);
       } else {
         setErrors({ general: data.error || 'Error al registrar mascota' });
       }
@@ -79,15 +82,29 @@ export default function RegisterMascotaScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← Volver</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Nueva mascota</Text>
-        <Text style={styles.subtitle}>Registra los datos de tu mascota</Text>
+        <View style={styles.headerContent}>
+          <Image
+            source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>Nueva mascota</Text>
+          <Text style={styles.subtitle}>Registra los datos de tu mascota</Text>
+        </View>
+        <View style={styles.waveLine} />
       </View>
 
       <View style={styles.form}>
 
         {errors.general && (
           <View style={styles.errorBox}>
-            <Text style={styles.errorBoxText}>⚠️ {errors.general}</Text>
+            <Text style={styles.errorBoxText}>{errors.general}</Text>
+          </View>
+        )}
+
+        {success && (
+          <View style={styles.successBox}>
+            <Text style={styles.successText}>Mascota registrada correctamente. Ahora puedes agregar una foto.</Text>
           </View>
         )}
 
@@ -179,15 +196,33 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   scroll: { paddingBottom: 40 },
   header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 50,
-    paddingBottom: 24,
+    backgroundColor: COLORS.white,
+    paddingTop: 10,
+    paddingBottom: 0,
     paddingHorizontal: 20,
   },
-  backBtn: { marginBottom: 12 },
-  backText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.white, marginBottom: 4 },
-  subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)' },
+  backBtn: { marginBottom: 8 },
+  backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
+  headerContent: { alignItems: 'center', paddingBottom: 12 },
+  logo: { width: 70, height: 70, marginBottom: 8 },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  waveLine: {
+    width: '100%',
+    height: 4,
+    backgroundColor: COLORS.teal,
+    borderRadius: 2,
+  },
   form: {
     backgroundColor: COLORS.white,
     margin: 16,
@@ -200,8 +235,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.danger,
   },
   errorBoxText: { color: COLORS.danger, fontSize: 14 },
+  successBox: {
+    backgroundColor: COLORS.successLight,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.success,
+  },
+  successText: { color: COLORS.success, fontSize: 14 },
   inputGroup: { marginBottom: 16 },
   label: { fontSize: 14, fontWeight: '500', color: COLORS.text, marginBottom: 6 },
   input: {
@@ -226,14 +272,14 @@ const styles = StyleSheet.create({
     borderColor: COLORS.grayBorder,
     backgroundColor: COLORS.grayLight,
   },
-  especieBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+ especieBtnActive: {
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
   },
   especieText: { fontSize: 13, color: COLORS.text },
   especieTextActive: { color: COLORS.white, fontWeight: '500' },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

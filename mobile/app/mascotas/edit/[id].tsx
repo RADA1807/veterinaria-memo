@@ -466,8 +466,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grayLight,
   },
   especieBtnActive: {
-    backgroundColor: COLORS.teal,
-    borderColor: COLORS.teal,
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
   },
   especieText: { fontSize: 13, color: COLORS.text },
   especieTextActive: { color: COLORS.white, fontWeight: '500' },

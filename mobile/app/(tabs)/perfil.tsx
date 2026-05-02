@@ -45,8 +45,9 @@ export default function PerfilScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        setErrors({ success: 'Perfil actualizado correctamente' });
-      } else {
+  setErrors({ success: 'Perfil actualizado correctamente' });
+  setTimeout(() => setErrors({}), 3000);
+} else {
         setErrors({ general: data.error || 'Error al actualizar' });
       }
     } catch (error) {
