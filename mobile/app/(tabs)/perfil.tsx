@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, ActivityIndicator, Image
+  StyleSheet, ScrollView, ActivityIndicator, Alert
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
@@ -45,9 +45,9 @@ export default function PerfilScreen() {
       const data = await response.json();
 
       if (response.ok) {
-  setErrors({ success: 'Perfil actualizado correctamente' });
-  setTimeout(() => setErrors({}), 3000);
-} else {
+        setErrors({ success: 'Perfil actualizado correctamente' });
+        setTimeout(() => setErrors({}), 3000);
+      } else {
         setErrors({ general: data.error || 'Error al actualizar' });
       }
     } catch (error) {
@@ -58,23 +58,35 @@ export default function PerfilScreen() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm('¿Estás seguro? Esta acción eliminará tu cuenta, mascotas y citas. No se puede deshacer.')) return;
-    try {
-      const response = await fetch(`${API_URL}/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+    Alert.alert(
+      'Eliminar cuenta',
+      '¿Estás seguro? Esta acción eliminará tu cuenta, mascotas y citas. No se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sí, eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${API_URL}/delete`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              if (response.ok) {
+                await logout();
+              } else {
+                setErrors({ general: 'No se pudo eliminar la cuenta' });
+              }
+            } catch (error) {
+              setErrors({ general: 'Error de conexión' });
+            }
+          },
         },
-      });
-      if (response.ok) {
-        await logout();
-      } else {
-        setErrors({ general: 'No se pudo eliminar la cuenta' });
-      }
-    } catch (error) {
-      setErrors({ general: 'Error de conexión' });
-    }
+      ]
+    );
   };
 
   return (
@@ -183,7 +195,6 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     paddingHorizontal: 20,
   },
- 
   avatar: {
     width: 80,
     height: 80,

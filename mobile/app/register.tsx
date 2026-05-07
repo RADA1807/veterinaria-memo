@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator
+  ScrollView, ActivityIndicator, Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ export default function RegisterScreen() {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [direccion, setDireccion] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,7 @@ export default function RegisterScreen() {
     setLoading(true);
     setErrors({});
     try {
-      await register(nombre.trim(), email.trim(), telefono.trim(), password);
+      await register(nombre.trim(), email.trim(), telefono.trim(), password, direccion.trim());
     } catch (error: any) {
       setErrors({ general: error.message || 'Error al registrarse' });
     } finally {
@@ -59,14 +60,21 @@ export default function RegisterScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
-        {/* Header */}
+        {/* Header — igual que login */}
         <View style={styles.header}>
-          <Text style={styles.headerIcon}>🐾</Text>
+          <Image
+            source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.headerTitle}>Veterinaria Memo</Text>
         </View>
+
+        {/* Wave — igual que login */}
+        <View style={styles.wave} />
 
         {/* Form */}
         <View style={styles.form}>
@@ -119,6 +127,17 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>Dirección</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tu dirección"
+              value={direccion}
+              onChangeText={setDireccion}
+              placeholderTextColor={COLORS.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Contraseña</Text>
             <TextInput
               style={[styles.input, errors.password ? styles.inputError : null]}
@@ -160,33 +179,49 @@ export default function RegisterScreen() {
               ¿Ya tienes cuenta? <Text style={styles.linkBold}>Inicia sesión aquí</Text>
             </Text>
           </TouchableOpacity>
-        </View>
 
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.primary },
+  container: { flex: 1, backgroundColor: COLORS.white },
   scroll: { flexGrow: 1 },
   header: {
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 50,
+    paddingBottom: 20,
     alignItems: 'center',
+    backgroundColor: COLORS.white,
   },
-  headerIcon: { fontSize: 40, marginBottom: 8 },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.white },
+  logo: { width: 100, height: 100, marginBottom: 8 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
+  wave: {
+    height: 30,
+    backgroundColor: COLORS.teal,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+  },
   form: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    backgroundColor: COLORS.teal,
     padding: 30,
-    paddingTop: 35,
+    paddingTop: 20,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, marginBottom: 6 },
-  subtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 24 },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
   errorBox: {
     backgroundColor: COLORS.dangerLight,
     borderRadius: 8,
@@ -195,19 +230,19 @@ const styles = StyleSheet.create({
   },
   errorBoxText: { color: COLORS.danger, fontSize: 14 },
   inputGroup: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '500', color: COLORS.text, marginBottom: 6 },
+  label: { fontSize: 14, fontWeight: '500', color: COLORS.white, marginBottom: 6 },
   input: {
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
+    borderColor: 'rgba(255,255,255,0.4)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     color: COLORS.text,
-    backgroundColor: COLORS.grayLight,
+    backgroundColor: COLORS.white,
   },
   inputError: { borderColor: COLORS.danger },
-  errorText: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
+  errorText: { color: COLORS.dangerLight, fontSize: 12, marginTop: 4 },
   button: {
     backgroundColor: COLORS.secondary,
     borderRadius: 12,
@@ -218,6 +253,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.7 },
   buttonText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
-  link: { textAlign: 'center', color: COLORS.textSecondary, fontSize: 14 },
-  linkBold: { color: COLORS.primary, fontWeight: 'bold' },
+  link: { textAlign: 'center', color: 'rgba(255,255,255,0.85)', fontSize: 14 },
+  linkBold: { color: COLORS.white, fontWeight: 'bold' },
 });

@@ -4,6 +4,7 @@ import {
   StyleSheet, ScrollView, ActivityIndicator,
   Alert, Image, Platform
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
@@ -14,18 +15,20 @@ export default function RegisterCitaScreen() {
   const { token, mascotas } = useAuth();
   const { mascotaId } = useLocalSearchParams<{ mascotaId?: string }>();
 
-  const getTodayString = () => {
+  const getToday = () => {
     const now = new Date();
     const offset = now.getTimezoneOffset();
-    const local = new Date(now.getTime() - offset * 60000);
-    return local.toISOString().split('T')[0];
+    return new Date(now.getTime() - offset * 60000);
   };
+
+  const formatFecha = (date: Date) => date.toISOString().split('T')[0];
 
   const [selectedMascota, setSelectedMascota] = useState<string>(mascotaId || '');
   const [selectedServicio, setSelectedServicio] = useState('');
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [motivo, setMotivo] = useState('');
-  const [fecha, setFecha] = useState(getTodayString());
+  const [fecha, setFecha] = useState<Date>(getToday());
+  const [showFecha, setShowFecha] = useState(false);
   const [hora, setHora] = useState('09:00');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
@@ -58,6 +61,10 @@ export default function RegisterCitaScreen() {
     if (!selectedMascota) newErrors.mascota = 'Selecciona una mascota';
     if (!selectedServicio) newErrors.servicio = 'Selecciona un servicio';
     if (!fecha) newErrors.fecha = 'La fecha es obligatoria';
+    else {
+      const diaSemana = fecha.getDay();
+      if (diaSemana === 0) newErrors.fecha = 'No atendemos los domingos';
+    }
     if (!hora) newErrors.hora = 'La hora es obligatoria';
     else {
       const hh = parseInt(hora.split(':')[0]);
@@ -81,7 +88,7 @@ export default function RegisterCitaScreen() {
         },
         body: JSON.stringify({
           mascota_id: selectedMascota,
-          fecha,
+          fecha: formatFecha(fecha),
           hora,
           motivo,
           servicio: selectedServicio,
@@ -183,18 +190,28 @@ export default function RegisterCitaScreen() {
           {errors.servicio && <Text style={styles.errorText}>{errors.servicio}</Text>}
         </View>
 
-        {/* Fecha */}
+        {/* Fecha con DateTimePicker */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>📅 Fecha</Text>
-          <TextInput
-            style={[styles.input, errors.fecha ? styles.inputError : null]}
-            value={fecha}
-            onChangeText={setFecha}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={COLORS.textSecondary}
-          />
+          <TouchableOpacity
+            style={[styles.dateBtn, errors.fecha ? styles.inputError : null]}
+            onPress={() => setShowFecha(true)}
+          >
+            <Text style={styles.dateBtnText}>{formatFecha(fecha)}</Text>
+          </TouchableOpacity>
+          {showFecha && (
+            <DateTimePicker
+              value={fecha}
+              mode="date"
+              minimumDate={getToday()}
+              onChange={(event, date) => {
+                setShowFecha(Platform.OS === 'ios');
+                if (date) setFecha(date);
+              }}
+            />
+          )}
           {errors.fecha && <Text style={styles.errorText}>{errors.fecha}</Text>}
-          <Text style={styles.inputHint}>Formato: 2026-04-28 (año-mes-día)</Text>
+          <Text style={styles.inputHint}>Lunes a Sábado únicamente</Text>
         </View>
 
         {/* Hora */}
@@ -327,6 +344,15 @@ const styles = StyleSheet.create({
   },
   horaText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
   horaTextActive: { color: COLORS.white },
+  dateBtn: {
+    borderWidth: 1,
+    borderColor: COLORS.grayBorder,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: COLORS.grayLight,
+  },
+  dateBtnText: { fontSize: 15, color: COLORS.text },
   input: {
     borderWidth: 1,
     borderColor: COLORS.grayBorder,

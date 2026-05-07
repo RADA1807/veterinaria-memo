@@ -16,7 +16,7 @@ const authLimiter = rateLimit({
 
 // 📌 Registrar usuario + propietario
 router.post('/register', authLimiter, async (req, res) => {
-  const { nombre, email, telefono, password } = req.body;
+  const { nombre, email, telefono, password, direccion } = req.body;
 
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: 'Nombre, email y password son obligatorios' });
@@ -49,8 +49,8 @@ router.post('/register', authLimiter, async (req, res) => {
 
     const propietarioId = uuidv4();
     await db.query(
-      'INSERT INTO propietarios (id, nombre, telefono, correo, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
-      [propietarioId, nombre, telefono || null, email, usuarioId]
+      'INSERT INTO propietarios (id, nombre, telefono, correo, direccion, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
+[propietarioId, nombre, telefono || null, email, direccion || null, usuarioId]
     );
 
     const token = jwt.sign(

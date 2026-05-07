@@ -22,6 +22,7 @@ export interface Mascota {
   raza: string;
   edad: number;
   historial_medico?: string;
+  foto?: string;
   propietario_id: string;
 }
 
@@ -67,14 +68,4 @@ export interface AuthResponse {
   rol: string;
   mascotas: Mascota[];
   error?: string;
-}
-export interface Mascota {
-  id: string;
-  nombre: string;
-  especie: string;
-  raza: string;
-  edad: number;
-  historial_medico?: string;
-  foto?: string;
-  propietario_id: string;
 }
