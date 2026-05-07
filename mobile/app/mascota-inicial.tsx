@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
-  ScrollView, ActivityIndicator
+  ScrollView, ActivityIndicator, Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -77,18 +77,26 @@ export default function MascotaInicialScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
+        {/* Header — igual que login y registro */}
         <View style={styles.header}>
-          <Text style={styles.headerIcon}>🐶</Text>
-          <Text style={styles.headerTitle}>Registra tu mascota</Text>
-          <Text style={styles.headerSubtitle}>
-            Antes de continuar, cuéntanos sobre tu mascota
-          </Text>
+          <Image
+            source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Veterinaria Memo</Text>
         </View>
 
+        {/* Wave */}
+        <View style={styles.wave} />
+
+        {/* Form */}
         <View style={styles.form}>
+          <Text style={styles.title}>Registra tu mascota</Text>
+          <Text style={styles.subtitle}>Antes de continuar, cuéntanos sobre tu mascota</Text>
 
           {errors.general && (
             <View style={styles.errorBox}>
@@ -182,24 +190,40 @@ export default function MascotaInicialScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.primary },
+  container: { flex: 1, backgroundColor: COLORS.white },
   scroll: { flexGrow: 1 },
   header: {
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 50,
+    paddingBottom: 20,
     alignItems: 'center',
-    paddingHorizontal: 30,
+    backgroundColor: COLORS.white,
   },
-  headerIcon: { fontSize: 50, marginBottom: 12 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.white, marginBottom: 8 },
-  headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
+  logo: { width: 100, height: 100, marginBottom: 8 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
+  wave: {
+    height: 30,
+    backgroundColor: COLORS.teal,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+  },
   form: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    backgroundColor: COLORS.teal,
     padding: 30,
-    paddingTop: 35,
+    paddingTop: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 24,
+    textAlign: 'center',
   },
   errorBox: {
     backgroundColor: COLORS.dangerLight,
@@ -209,20 +233,20 @@ const styles = StyleSheet.create({
   },
   errorBoxText: { color: COLORS.danger, fontSize: 14 },
   inputGroup: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '500', color: COLORS.text, marginBottom: 6 },
+  label: { fontSize: 14, fontWeight: '500', color: COLORS.white, marginBottom: 6 },
   input: {
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
+    borderColor: 'rgba(255,255,255,0.4)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     color: COLORS.text,
-    backgroundColor: COLORS.grayLight,
+    backgroundColor: COLORS.white,
   },
   textArea: { height: 80, textAlignVertical: 'top' },
   inputError: { borderColor: COLORS.danger },
-  errorText: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
+  errorText: { color: COLORS.dangerLight, fontSize: 12, marginTop: 4 },
   especieGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -233,17 +257,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
-    backgroundColor: COLORS.grayLight,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   especieBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
   },
-  especieText: { fontSize: 13, color: COLORS.text },
+  especieText: { fontSize: 13, color: COLORS.white },
   especieTextActive: { color: COLORS.white, fontWeight: '500' },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

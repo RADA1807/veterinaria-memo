@@ -139,7 +139,7 @@ export default function CitasScreen() {
 
               <View style={styles.cardBody}>
                 <Text style={styles.cardServicio}>💉 {item.servicio}</Text>
-                <Text style={styles.cardFecha}>📅 {item.fecha} · ⏰ {item.hora}</Text>
+                <Text style={styles.cardFecha}>📅 {item.fecha?.toString().split('T')[0]} · ⏰ {item.hora?.toString().slice(0, 5)}</Text>
                 <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
               </View>
 
