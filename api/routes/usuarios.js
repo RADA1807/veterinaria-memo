@@ -21,6 +21,73 @@ router.post('/register', authLimiter, async (req, res) => {
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: 'Nombre, email y password son obligatorios' });
   }
+  
+// 📌 Registrar administrador con código de invitación
+router.post('/register-admin', async (req, res) => {
+  const { nombre, email, telefono, password, codigo } = req.body;
+
+  if (!nombre || !email || !password || !codigo) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios incluyendo el código de invitación' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Formato de email inválido' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    // Validar código de invitación
+    const [invitacion] = await db.query(
+      'SELECT * FROM invitaciones WHERE codigo = ? AND usado = FALSE AND fecha_expiracion > NOW()',
+      [codigo]
+    );
+
+    if (invitacion.length === 0) {
+      return res.status(400).json({ error: 'Código de invitación inválido o expirado' });
+    }
+
+    const [existe] = await db.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existe.length > 0) {
+      return res.status(400).json({ error: 'Ya existe un usuario con ese email' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const usuarioId = uuidv4();
+
+    await db.query(
+      'INSERT INTO usuarios (id, nombre, email, telefono, password, rol, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [usuarioId, nombre, email, telefono || null, hashedPassword, 'admin']
+    );
+
+    // Marcar código como usado
+    await db.query(
+      'UPDATE invitaciones SET usado = TRUE WHERE codigo = ?',
+      [codigo]
+    );
+
+    const token = jwt.sign(
+      { id: usuarioId, rol: 'admin', email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      message: '✅ Administrador registrado exitosamente',
+      token,
+      usuarioId,
+      nombre,
+      email,
+      rol: 'admin',
+    });
+  } catch (error) {
+    console.error('❌ Error en registro admin:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
   // Validar formato de email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -189,6 +256,51 @@ router.delete('/delete', verifyToken, async (req, res) => {
 // 🚪 Logout
 router.post('/logout', verifyToken, (req, res) => {
   res.json({ message: '✅ Sesión cerrada correctamente' });
+});
+
+// 🎟️ Generar código de invitación (solo admin)
+router.post('/generar-invitacion', verifyToken, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ error: 'Solo el administrador puede generar invitaciones' });
+    }
+
+    const codigo = 'INV-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const id = uuidv4();
+    const fechaExpiracion = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+    await db.query(
+      'INSERT INTO invitaciones (id, codigo, usado, fecha_expiracion, creado_por) VALUES (?, ?, FALSE, ?, ?)',
+      [id, codigo, fechaExpiracion, req.user.id]
+    );
+
+    res.json({ message: '✅ Invitación generada', codigo, expira: fechaExpiracion });
+  } catch (error) {
+    console.error('❌ Error al generar invitación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ✅ Validar código de invitación
+router.post('/validar-invitacion', async (req, res) => {
+  try {
+    const { codigo } = req.body;
+    if (!codigo) return res.status(400).json({ error: 'Código requerido' });
+
+    const [rows] = await db.query(
+      'SELECT * FROM invitaciones WHERE codigo = ? AND usado = FALSE AND fecha_expiracion > NOW()',
+      [codigo]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'Código inválido o expirado' });
+    }
+
+    res.json({ valido: true });
+  } catch (error) {
+    console.error('❌ Error al validar invitación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 module.exports = router;
