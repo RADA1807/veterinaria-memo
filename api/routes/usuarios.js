@@ -163,13 +163,23 @@ router.post('/login', authLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
 
-    const [propRows] = await db.query(
-      'SELECT id FROM propietarios WHERE usuario_id = ?',
-      [usuario.id]
-    );
-    if (propRows.length === 0) {
-      return res.status(404).json({ error: 'Propietario no encontrado' });
-    }
+    let propietarioId = null;
+
+if (usuario.rol === 'propietario') {
+  const [propRows] = await db.query(
+    'SELECT id FROM propietarios WHERE usuario_id = ?',
+    [usuario.id]
+  );
+  if (propRows.length === 0) {
+    return res.status(404).json({ error: 'Propietario no encontrado' });
+  }
+  propietarioId = propRows[0].id;
+}
+
+const [mascotas] = usuario.rol === 'propietario' ? await db.query(
+  'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
+  [propietarioId]
+) : [[]];
     const propietario = propRows[0];
 
     const [mascotas] = await db.query(
@@ -183,17 +193,17 @@ router.post('/login', authLimiter, async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.json({
-      message: '✅ Login exitoso',
-      token,
-      usuarioId: usuario.id,
-      propietarioId: propietario.id,
-      nombre: usuario.nombre,
-      email: usuario.email,
-      telefono: usuario.telefono,
-      rol: usuario.rol,
-      mascotas,
-    });
+  res.json({
+  message: '✅ Login exitoso',
+  token,
+  usuarioId: usuario.id,
+  propietarioId: propietarioId,
+  nombre: usuario.nombre,
+  email: usuario.email,
+  telefono: usuario.telefono,
+  rol: usuario.rol,
+  mascotas,
+});
   } catch (error) {
     console.error('❌ Error en login:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
