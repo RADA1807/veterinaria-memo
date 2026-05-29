@@ -176,10 +176,14 @@ if (usuario.rol === 'propietario') {
   propietarioId = propRows[0].id;
 }
 
-const [mascotas] = usuario.rol === 'propietario' ? await db.query(
-  'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
-  [propietarioId]
-) : [[]];
+let mascotas = [];
+if (usuario.rol === 'propietario') {
+  const [mascotasRows] = await db.query(
+    'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
+    [propietarioId]
+  );
+  mascotas = mascotasRows;
+}
     const propietario = propRows[0];
 
     const [mascotas] = await db.query(
