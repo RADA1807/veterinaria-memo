@@ -15,8 +15,11 @@ const navItems = [
   { href: '/dashboard/invitaciones', label: 'Invitaciones', icon: UserPlus },
 ];
 
+import { getUsuario } from '@/lib/auth';
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const usuario = getUsuario();
 
   return (
     <aside className="w-64 min-h-screen flex flex-col" style={{ background: 'linear-gradient(180deg, #003B6E 0%, #005fa3 50%, #00A99D 100%)' }}>
@@ -56,6 +59,18 @@ export default function Sidebar() {
 
       {/* Logout */}
       <div className="p-4 border-t border-white/10">
+        {usuario && (
+          <div className="flex items-center gap-3 px-4 py-2 mb-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+              style={{ background: '#F5A623' }}>
+              {usuario.email?.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white text-xs font-medium truncate">{usuario.email}</p>
+              <p className="text-xs capitalize" style={{ color: 'rgba(255,255,255,0.5)' }}>{usuario.rol}</p>
+            </div>
+          </div>
+        )}
         <button
           onClick={logout}
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full"
