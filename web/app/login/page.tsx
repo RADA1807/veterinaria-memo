@@ -122,6 +122,8 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:border-transparent transition-all text-slate-800 placeholder-slate-400"
+                  style={{ WebkitTextSecurity: showPass ? 'none' : undefined } as any}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
