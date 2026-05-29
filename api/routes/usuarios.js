@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 
 // 🔒 Rate limiting para login y register
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Demasiados intentos, espera 15 minutos' }
 });
@@ -21,7 +21,56 @@ router.post('/register', authLimiter, async (req, res) => {
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: 'Nombre, email y password son obligatorios' });
   }
-  
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Formato de email inválido' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    const [existe] = await db.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existe.length > 0) {
+      return res.status(400).json({ error: 'Ya existe un usuario con ese email' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const usuarioId = uuidv4();
+
+    await db.query(
+      'INSERT INTO usuarios (id, nombre, email, telefono, password, rol, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [usuarioId, nombre, email, telefono || null, hashedPassword, 'propietario']
+    );
+
+    const propietarioId = uuidv4();
+    await db.query(
+      'INSERT INTO propietarios (id, nombre, telefono, correo, direccion, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [propietarioId, nombre, telefono || null, email, direccion || null, usuarioId]
+    );
+
+    const token = jwt.sign(
+      { id: usuarioId, rol: 'propietario', email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      message: '✅ Registro exitoso',
+      token,
+      usuarioId,
+      propietarioId,
+      nombre,
+      email,
+    });
+  } catch (error) {
+    console.error('❌ Error en registro:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // 📌 Registrar administrador con código de invitación
 router.post('/register-admin', async (req, res) => {
   const { nombre, email, telefono, password, codigo } = req.body;
@@ -40,7 +89,6 @@ router.post('/register-admin', async (req, res) => {
   }
 
   try {
-    // Validar código de invitación
     const [invitacion] = await db.query(
       'SELECT * FROM invitaciones WHERE codigo = ? AND usado = FALSE AND fecha_expiracion > NOW()',
       [codigo]
@@ -63,7 +111,6 @@ router.post('/register-admin', async (req, res) => {
       [usuarioId, nombre, email, telefono || null, hashedPassword, 'admin']
     );
 
-    // Marcar código como usado
     await db.query(
       'UPDATE invitaciones SET usado = TRUE WHERE codigo = ?',
       [codigo]
@@ -85,57 +132,6 @@ router.post('/register-admin', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error en registro admin:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-  // Validar formato de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Formato de email inválido' });
-  }
-
-  // Validar longitud de password
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
-  }
-
-  try {
-    const [existe] = await db.query('SELECT id FROM usuarios WHERE email = ?', [email]);
-    if (existe.length > 0) {
-      return res.status(400).json({ error: 'Ya existe un usuario con ese email' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const usuarioId = uuidv4();
-
-    await db.query(
-      'INSERT INTO usuarios (id, nombre, email, telefono, password, rol, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
-      [usuarioId, nombre, email, telefono || null, hashedPassword, 'propietario']
-    );
-
-    const propietarioId = uuidv4();
-    await db.query(
-      'INSERT INTO propietarios (id, nombre, telefono, correo, direccion, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
-[propietarioId, nombre, telefono || null, email, direccion || null, usuarioId]
-    );
-
-    const token = jwt.sign(
-      { id: usuarioId, rol: 'propietario', email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.status(201).json({
-      message: '✅ Registro exitoso',
-      token,
-      usuarioId,
-      propietarioId,
-      nombre,
-      email,
-    });
-  } catch (error) {
-    console.error('❌ Error en registro:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -164,32 +160,24 @@ router.post('/login', authLimiter, async (req, res) => {
     }
 
     let propietarioId = null;
+    let mascotas = [];
 
-if (usuario.rol === 'propietario') {
-  const [propRows] = await db.query(
-    'SELECT id FROM propietarios WHERE usuario_id = ?',
-    [usuario.id]
-  );
-  if (propRows.length === 0) {
-    return res.status(404).json({ error: 'Propietario no encontrado' });
-  }
-  propietarioId = propRows[0].id;
-}
+    if (usuario.rol === 'propietario') {
+      const [propRows] = await db.query(
+        'SELECT id FROM propietarios WHERE usuario_id = ?',
+        [usuario.id]
+      );
+      if (propRows.length === 0) {
+        return res.status(404).json({ error: 'Propietario no encontrado' });
+      }
+      propietarioId = propRows[0].id;
 
-let mascotas = [];
-if (usuario.rol === 'propietario') {
-  const [mascotasRows] = await db.query(
-    'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
-    [propietarioId]
-  );
-  mascotas = mascotasRows;
-}
-    const propietario = propRows[0];
-
-    const [mascotas] = await db.query(
-      'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
-      [propietario.id]
-    );
+      const [mascotasRows] = await db.query(
+        'SELECT id, nombre, especie, raza FROM mascotas WHERE propietario_id = ?',
+        [propietarioId]
+      );
+      mascotas = mascotasRows;
+    }
 
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol, email: usuario.email },
@@ -197,17 +185,17 @@ if (usuario.rol === 'propietario') {
       { expiresIn: '7d' }
     );
 
-  res.json({
-  message: '✅ Login exitoso',
-  token,
-  usuarioId: usuario.id,
-  propietarioId: propietarioId,
-  nombre: usuario.nombre,
-  email: usuario.email,
-  telefono: usuario.telefono,
-  rol: usuario.rol,
-  mascotas,
-});
+    res.json({
+      message: '✅ Login exitoso',
+      token,
+      usuarioId: usuario.id,
+      propietarioId,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      telefono: usuario.telefono,
+      rol: usuario.rol,
+      mascotas,
+    });
   } catch (error) {
     console.error('❌ Error en login:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -217,7 +205,7 @@ if (usuario.rol === 'propietario') {
 // ✏️ Actualizar perfil
 router.put('/update', verifyToken, async (req, res) => {
   const usuarioId = req.user.id;
-  const { nombre, email, telefono } = req.body;
+  const { nombre, email, telefono, direccion } = req.body;
 
   if (!nombre || !email) {
     return res.status(400).json({ error: 'Nombre y email son obligatorios' });
@@ -230,8 +218,8 @@ router.put('/update', verifyToken, async (req, res) => {
     );
 
     await db.query(
-      'UPDATE propietarios SET nombre=?, correo=?, telefono=?, fecha_actualizacion=NOW() WHERE usuario_id=?',
-      [nombre, email, telefono, usuarioId]
+      'UPDATE propietarios SET nombre=?, correo=?, telefono=?, direccion=?, fecha_actualizacion=NOW() WHERE usuario_id=?',
+      [nombre, email, telefono, direccion || null, usuarioId]
     );
 
     res.json({ message: '✅ Perfil actualizado correctamente', nombre, email, telefono });
@@ -281,7 +269,7 @@ router.post('/generar-invitacion', verifyToken, async (req, res) => {
 
     const codigo = 'INV-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     const id = uuidv4();
-    const fechaExpiracion = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    const fechaExpiracion = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     await db.query(
       'INSERT INTO invitaciones (id, codigo, usado, fecha_expiracion, creado_por) VALUES (?, ?, FALSE, ?, ?)',
