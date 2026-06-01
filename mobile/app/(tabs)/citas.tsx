@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, Alert, RefreshControl,
   ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
 import { Cita } from '../../types';
@@ -23,7 +24,6 @@ export default function CitasScreen() {
       });
       if (response.ok) {
         const data = await response.json();
-        // Filtrar filas con ID válido
         setCitas(Array.isArray(data) ? data.filter((c: Cita) => c.id) : []);
       }
     } catch (error) {
@@ -32,6 +32,12 @@ export default function CitasScreen() {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCitas();
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -67,10 +73,6 @@ export default function CitasScreen() {
       ]
     );
   };
-
-  useEffect(() => {
-    fetchCitas();
-  }, []);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {

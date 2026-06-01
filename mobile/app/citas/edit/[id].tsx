@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, ActivityIndicator, Alert
+  StyleSheet, ScrollView, ActivityIndicator, Alert, Image, Platform
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -38,9 +38,14 @@ export default function EditCitaScreen() {
         const data = await response.json();
         setSelectedServicio(data.servicio || '');
         setMotivo(data.motivo || '');
-        const [year, month, day] = data.fecha.split('-');
-        const fechaDate = new Date(Number(year), Number(month) - 1, Number(day));
-        setFecha(fechaDate);
+        try {
+          const fechaStr = data.fecha?.toString().split('T')[0];
+          const [year, month, day] = fechaStr.split('-');
+          const fechaDate = new Date(Number(year), Number(month) - 1, Number(day));
+          if (!isNaN(fechaDate.getTime())) setFecha(fechaDate);
+        } catch {
+          setFecha(new Date());
+        }
         const [hh, mm] = data.hora.split(':');
         const horaDate = new Date();
         horaDate.setHours(Number(hh), Number(mm));
@@ -70,7 +75,12 @@ export default function EditCitaScreen() {
     fetchServicios();
   }, []);
 
-  const formatFecha = (date: Date) => date.toISOString().split('T')[0];
+  const formatFecha = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const local = new Date(date.getTime() - offset * 60000);
+    return local.toISOString().split('T')[0];
+  };
+
   const formatHora = (date: Date) => date.toTimeString().split(' ')[0].substring(0, 5);
 
   const validate = () => {
@@ -119,7 +129,7 @@ export default function EditCitaScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={COLORS.teal} />
         <Text style={styles.loadingText}>Cargando cita...</Text>
       </View>
     );
@@ -128,14 +138,27 @@ export default function EditCitaScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
+      {/* Header igual que otras pantallas */}
       <View style={styles.header}>
+        <Image
+          source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.headerTitle}>Veterinaria Memo</Text>
+      </View>
+
+      {/* Wave */}
+      <View style={styles.wave} />
+
+      {/* Form */}
+      <View style={styles.form}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← Volver</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Editar cita</Text>
-      </View>
 
-      <View style={styles.form}>
+        <Text style={styles.title}>Editar cita</Text>
+        <Text style={styles.subtitle}>Modifica los datos de tu cita</Text>
 
         {errors.general && (
           <View style={styles.errorBox}>
@@ -174,7 +197,7 @@ export default function EditCitaScreen() {
               mode="date"
               minimumDate={new Date()}
               onChange={(event, date) => {
-                setShowFecha(false);
+                setShowFecha(Platform.OS === 'ios');
                 if (date) setFecha(date);
               }}
             />
@@ -193,7 +216,7 @@ export default function EditCitaScreen() {
               mode="time"
               is24Hour={true}
               onChange={(event, date) => {
-                setShowHora(false);
+                setShowHora(Platform.OS === 'ios');
                 if (date) setHora(date);
               }}
             />
@@ -232,25 +255,44 @@ export default function EditCitaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.grayLight },
-  scroll: { paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: COLORS.white },
+  scroll: { flexGrow: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, color: COLORS.textSecondary },
   header: {
-    backgroundColor: COLORS.primary,
     paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-  },
-  backBtn: { marginBottom: 12 },
-  backText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.white },
-  form: {
+    paddingBottom: 20,
+    alignItems: 'center',
     backgroundColor: COLORS.white,
-    margin: 16,
-    borderRadius: 12,
-    padding: 20,
-    elevation: 2,
+  },
+  logo: { width: 100, height: 100, marginBottom: 8 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
+  wave: {
+    height: 30,
+    backgroundColor: COLORS.teal,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+  },
+  form: {
+    flex: 1,
+    backgroundColor: COLORS.teal,
+    padding: 30,
+    paddingTop: 20,
+  },
+  backBtn: { marginBottom: 8 },
+  backText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   errorBox: {
     backgroundColor: COLORS.dangerLight,
@@ -260,46 +302,46 @@ const styles = StyleSheet.create({
   },
   errorBoxText: { color: COLORS.danger, fontSize: 14 },
   inputGroup: { marginBottom: 20 },
-  label: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 10 },
+  label: { fontSize: 14, fontWeight: '600', color: COLORS.white, marginBottom: 10 },
   optionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   optionBtn: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
-    backgroundColor: COLORS.grayLight,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   optionBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
   },
-  optionText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
+  optionText: { fontSize: 13, color: COLORS.white, fontWeight: '500' },
   optionTextActive: { color: COLORS.white },
   dateBtn: {
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
+    borderColor: 'rgba(255,255,255,0.4)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: COLORS.grayLight,
+    backgroundColor: COLORS.white,
   },
   dateBtnText: { fontSize: 15, color: COLORS.text },
   input: {
     borderWidth: 1,
-    borderColor: COLORS.grayBorder,
+    borderColor: 'rgba(255,255,255,0.4)',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     color: COLORS.text,
-    backgroundColor: COLORS.grayLight,
+    backgroundColor: COLORS.white,
   },
   textArea: { height: 80, textAlignVertical: 'top' },
   inputError: { borderColor: COLORS.danger },
-  errorText: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
+  errorText: { color: COLORS.dangerLight, fontSize: 12, marginTop: 4 },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

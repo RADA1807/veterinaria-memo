@@ -261,4 +261,20 @@ router.get('/servicios/lista', async (req, res) => {
   res.json(SERVICIOS_DISPONIBLES);
 });
 
+// 📅 Obtener horas ocupadas por fecha
+router.get('/horas-ocupadas/:fecha', async (req, res) => {
+  try {
+    const { fecha } = req.params;
+    const [rows] = await db.query(
+      "SELECT hora FROM citas WHERE fecha = ? AND estado != 'cancelada'",
+      [fecha]
+    );
+    const horas = rows.map(r => r.hora?.toString().slice(0, 5));
+    res.json(horas);
+  } catch (error) {
+    console.error('❌ Error al obtener horas ocupadas:', error);
+    res.status(500).json({ error: 'Error al obtener horas ocupadas' });
+  }
+});
+
 module.exports = router;

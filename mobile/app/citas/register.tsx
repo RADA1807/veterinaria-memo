@@ -29,7 +29,9 @@ export default function RegisterCitaScreen() {
   const [motivo, setMotivo] = useState('');
   const [fecha, setFecha] = useState<Date>(getToday());
   const [showFecha, setShowFecha] = useState(false);
-  const [hora, setHora] = useState('09:00');
+  const [hora, setHora] = useState('');
+  const [horasOcupadas, setHorasOcupadas] = useState<string[]>([]);
+  const [loadingHoras, setLoadingHoras] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     mascota?: string;
@@ -39,6 +41,13 @@ export default function RegisterCitaScreen() {
     hora?: string;
     general?: string;
   }>({});
+
+  const HORAS_DISPONIBLES = [
+    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30',
+  ];
 
   const fetchServicios = async () => {
     try {
@@ -52,8 +61,27 @@ export default function RegisterCitaScreen() {
     }
   };
 
+  const fetchHorasOcupadas = async (fechaStr: string) => {
+    setLoadingHoras(true);
+    setHora('');
+    try {
+      const response = await fetch(`${API_URL}/citas/horas-ocupadas/${fechaStr}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHorasOcupadas(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar horas ocupadas:', error);
+    } finally {
+      setLoadingHoras(false);
+    }
+  };
+
   useEffect(() => {
     fetchServicios();
+    fetchHorasOcupadas(formatFecha(getToday()));
   }, []);
 
   const validate = () => {
@@ -65,11 +93,7 @@ export default function RegisterCitaScreen() {
       const diaSemana = fecha.getDay();
       if (diaSemana === 0) newErrors.fecha = 'No atendemos los domingos';
     }
-    if (!hora) newErrors.hora = 'La hora es obligatoria';
-    else {
-      const hh = parseInt(hora.split(':')[0]);
-      if (hh < 7 || hh >= 18) newErrors.hora = 'Horario de atención: 7:00am a 6:00pm';
-    }
+    if (!hora) newErrors.hora = 'Selecciona una hora disponible';
     if (!motivo) newErrors.motivo = 'El motivo es obligatorio';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -112,13 +136,6 @@ export default function RegisterCitaScreen() {
       setLoading(false);
     }
   };
-
-  const HORAS_DISPONIBLES = [
-    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
-    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30',
-  ];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
@@ -206,7 +223,10 @@ export default function RegisterCitaScreen() {
               minimumDate={getToday()}
               onChange={(event, date) => {
                 setShowFecha(Platform.OS === 'ios');
-                if (date) setFecha(date);
+                if (date) {
+                  setFecha(date);
+                  fetchHorasOcupadas(formatFecha(date));
+                }
               }}
             />
           )}
@@ -217,20 +237,38 @@ export default function RegisterCitaScreen() {
         {/* Hora */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>⏰ Hora de atención</Text>
-          <View style={styles.horasGrid}>
-            {HORAS_DISPONIBLES.map((h) => (
-              <TouchableOpacity
-                key={h}
-                style={[styles.horaBtn, hora === h && styles.horaBtnActive]}
-                onPress={() => setHora(h)}
-              >
-                <Text style={[styles.horaText, hora === h && styles.horaTextActive]}>
-                  {h}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {loadingHoras ? (
+            <ActivityIndicator color={COLORS.teal} style={{ marginTop: 8 }} />
+          ) : (
+            <View style={styles.horasGrid}>
+              {HORAS_DISPONIBLES.map((h) => {
+                const ocupada = horasOcupadas.includes(h);
+                const activa = hora === h;
+                return (
+                  <TouchableOpacity
+                    key={h}
+                    disabled={ocupada}
+                    style={[
+                      styles.horaBtn,
+                      activa && styles.horaBtnActive,
+                      ocupada && styles.horaBtnOcupada,
+                    ]}
+                    onPress={() => setHora(h)}
+                  >
+                    <Text style={[
+                      styles.horaText,
+                      activa && styles.horaTextActive,
+                      ocupada && styles.horaTextOcupada,
+                    ]}>
+                      {h}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
           {errors.hora && <Text style={styles.errorText}>{errors.hora}</Text>}
+          <Text style={styles.inputHint}>🔴 Horas en rojo ya están ocupadas</Text>
         </View>
 
         {/* Motivo */}
@@ -342,8 +380,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.teal,
     borderColor: COLORS.teal,
   },
+  horaBtnOcupada: {
+    backgroundColor: COLORS.dangerLight,
+    borderColor: COLORS.danger,
+    opacity: 0.6,
+  },
   horaText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
   horaTextActive: { color: COLORS.white },
+  horaTextOcupada: { color: COLORS.danger },
   dateBtn: {
     borderWidth: 1,
     borderColor: COLORS.grayBorder,
