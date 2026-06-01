@@ -111,13 +111,13 @@ router.get('/', async (req, res) => {
       const propietarioId = propRows[0].id;
 
       const [rows] = await db.query(`
-        SELECT c.id, c.fecha, c.hora, c.motivo, c.servicio, c.estado,
-               m.nombre AS mascota_nombre, m.especie
-        FROM citas c
-        INNER JOIN mascotas m ON c.mascota_id = m.id
-        WHERE c.propietario_id = ?
-        ORDER BY c.fecha ASC, c.hora ASC
-      `, [propietarioId]);
+  SELECT c.id, c.fecha, c.hora, c.motivo, c.servicio, c.estado,
+         m.nombre AS mascota_nombre, m.especie, m.foto AS mascota_foto
+  FROM citas c
+  INNER JOIN mascotas m ON c.mascota_id = m.id
+  WHERE c.propietario_id = ?
+  ORDER BY c.fecha ASC, c.hora ASC
+`, [propietarioId]);
 
       return res.json(rows || []);
     }
