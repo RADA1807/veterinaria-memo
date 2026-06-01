@@ -34,7 +34,7 @@ router.get('/:id', async (req, res) => {
     }
 
     const [mascotas] = await db.query(
-      'SELECT id, nombre, especie, raza, edad FROM mascotas WHERE propietario_id = ?',
+      'SELECT id, nombre, especie, raza, edad, foto FROM mascotas WHERE propietario_id = ?',
       [id]
     );
 
