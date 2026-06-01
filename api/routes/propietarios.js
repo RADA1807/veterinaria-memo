@@ -75,4 +75,31 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// ✏️ Actualizar propietario (solo admin)
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, correo, telefono } = req.body;
+
+    if (!nombre || !correo) {
+      return res.status(400).json({ error: 'Nombre y correo son obligatorios' });
+    }
+
+    await db.query(
+      'UPDATE propietarios SET nombre=?, correo=?, telefono=?, fecha_actualizacion=NOW() WHERE id=?',
+      [nombre, correo, telefono || null, id]
+    );
+
+    await db.query(
+      'UPDATE usuarios SET nombre=?, email=?, telefono=?, fecha_actualizacion=NOW() WHERE id=(SELECT usuario_id FROM propietarios WHERE id=?)',
+      [nombre, correo, telefono || null, id]
+    );
+
+    res.json({ message: '✅ Propietario actualizado correctamente' });
+  } catch (err) {
+    console.error('❌ Error al actualizar propietario:', err);
+    res.status(500).json({ error: 'Error al actualizar propietario' });
+  }
+});
+
 module.exports = router;

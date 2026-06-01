@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getPropietarios, getPropietario, deletePropietario } from '@/lib/api';
-import { Users, Search, ChevronRight, X, Trash2, Check, Mail, Phone, PawPrint, Calendar } from 'lucide-react';
+import { Users, Search, ChevronRight, X, Trash2, Check, Mail, Phone, PawPrint, Calendar, Edit2 } from 'lucide-react';
+import api from '@/lib/api';
 
 interface Propietario {
   id: string; nombre: string; correo: string; telefono: string; total_mascotas: number;
@@ -26,6 +27,9 @@ export default function PropietariosPage() {
   const [selected, setSelected] = useState<PropietarioDetalle | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({ nombre: '', correo: '', telefono: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     getPropietarios().then(res => {
@@ -36,9 +40,38 @@ export default function PropietariosPage() {
 
   const openDetail = async (id: string) => {
     setLoadingDetail(true);
+    setEditando(false);
     const res = await getPropietario(id);
     setSelected(res.data);
     setLoadingDetail(false);
+  };
+
+  const startEdit = () => {
+    if (!selected) return;
+    setForm({
+      nombre: selected.nombre,
+      correo: selected.correo,
+      telefono: selected.telefono || '',
+    });
+    setEditando(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    setSaving(true);
+    try {
+      await api.put(`/api/propietarios/${selected.id}`, form);
+      setSelected(prev => prev ? { ...prev, ...form } : null);
+      setPropietarios(prev => prev.map(p =>
+        p.id === selected.id ? { ...p, nombre: form.nombre, correo: form.correo, telefono: form.telefono } : p
+      ));
+      setEditando(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -121,23 +154,66 @@ export default function PropietariosPage() {
                   </div>
                   <h3 className="font-semibold text-slate-800">{selected.nombre}</h3>
                 </div>
-                <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600">
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={startEdit} className="text-slate-400 hover:text-teal-600 transition-colors">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="p-5 space-y-3 border-b border-slate-100">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Mail className="w-4 h-4 text-slate-400" />
-                  {selected.correo}
-                </div>
-                {selected.telefono && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    {selected.telefono}
+              {/* Formulario de edición */}
+              {editando ? (
+                <form onSubmit={handleEdit} className="p-5 space-y-3 border-b border-slate-100">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Nombre</label>
+                    <input type="text" required value={form.nombre}
+                      onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 text-sm"
+                    />
                   </div>
-                )}
-              </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Correo</label>
+                    <input type="email" required value={form.correo}
+                      onChange={e => setForm(f => ({ ...f, correo: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Teléfono</label>
+                    <input type="tel" value={form.telefono}
+                      onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button type="button" onClick={() => setEditando(false)}
+                      className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-medium hover:bg-slate-50">
+                      Cancelar
+                    </button>
+                    <button type="submit" disabled={saving}
+                      className="flex-1 py-2 rounded-lg text-white text-xs font-medium disabled:opacity-50"
+                      style={{ background: '#00A99D' }}>
+                      {saving ? 'Guardando...' : 'Guardar'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="p-5 space-y-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    {selected.correo}
+                  </div>
+                  {selected.telefono && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Phone className="w-4 h-4 text-slate-400" />
+                      {selected.telefono}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Mascotas */}
               <div className="p-5 border-b border-slate-100">
