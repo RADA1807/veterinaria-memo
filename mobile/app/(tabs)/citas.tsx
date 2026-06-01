@@ -2,10 +2,9 @@ import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, Alert, RefreshControl,
-  ActivityIndicator
+  ActivityIndicator, Image
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
 import { Cita } from '../../types';
@@ -94,6 +93,16 @@ export default function CitasScreen() {
     }
   };
 
+  const getEspecieEmoji = (especie: string) => {
+    switch (especie?.toLowerCase()) {
+      case 'gato': return '🐱';
+      case 'ave': return '🐦';
+      case 'conejo': return '🐰';
+      case 'reptil': return '🦎';
+      default: return '🐶';
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -131,7 +140,23 @@ export default function CitasScreen() {
           return (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardMascota}>🐾 {item.mascota_nombre}</Text>
+                {/* Foto o emoji de la mascota */}
+                <View style={styles.mascotaAvatar}>
+                  {(item as any).mascota_foto ? (
+                    <Image
+                      source={{ uri: (item as any).mascota_foto }}
+                      style={styles.mascotaFoto}
+                    />
+                  ) : (
+                    <Text style={styles.mascotaEmoji}>
+                      {getEspecieEmoji(item.especie || '')}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.mascotaInfo}>
+                  <Text style={styles.cardMascota}>{item.mascota_nombre}</Text>
+                  <Text style={styles.cardEspecie}>{item.especie}</Text>
+                </View>
                 <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(item.estado) + '20' }]}>
                   <Text style={[styles.estadoText, { color: getEstadoColor(item.estado) }]}>
                     {getEstadoLabel(item.estado)}
@@ -198,11 +223,29 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+    gap: 10,
   },
-  cardMascota: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
+  mascotaAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.tealLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
+  mascotaFoto: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  mascotaEmoji: { fontSize: 24 },
+  mascotaInfo: { flex: 1 },
+  cardMascota: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
+  cardEspecie: { fontSize: 12, color: COLORS.textSecondary, capitalize: 'sentences' } as any,
   estadoBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   estadoText: { fontSize: 12, fontWeight: '500' },
   cardBody: { marginBottom: 12 },

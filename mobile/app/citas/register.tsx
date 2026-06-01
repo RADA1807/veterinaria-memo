@@ -62,22 +62,41 @@ export default function RegisterCitaScreen() {
   };
 
   const fetchHorasOcupadas = async (fechaStr: string) => {
-    setLoadingHoras(true);
-    setHora('');
-    try {
-      const response = await fetch(`${API_URL}/citas/horas-ocupadas/${fechaStr}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
+  setLoadingHoras(true);
+  setHora('');
+  try {
+    const response = await fetch(`${API_URL}/citas/horas-ocupadas/${fechaStr}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+
+      // Bloquear horas pasadas si es hoy
+      const hoy = formatFecha(new Date());
+      if (fechaStr === hoy) {
+        const ahora = new Date();
+        const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+        const HORAS_TODAS = [
+          '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+          '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+          '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+          '16:00', '16:30', '17:00', '17:30',
+        ];
+        const horasPasadas = HORAS_TODAS.filter(h => {
+          const [hh, mm] = h.split(':').map(Number);
+          return hh * 60 + mm <= horaActual;
+        });
+        setHorasOcupadas([...data, ...horasPasadas]);
+      } else {
         setHorasOcupadas(data);
       }
-    } catch (error) {
-      console.error('Error al cargar horas ocupadas:', error);
-    } finally {
-      setLoadingHoras(false);
     }
-  };
+  } catch (error) {
+    console.error('Error al cargar horas ocupadas:', error);
+  } finally {
+    setLoadingHoras(false);
+  }
+};
 
   useEffect(() => {
     fetchServicios();
@@ -169,21 +188,28 @@ export default function RegisterCitaScreen() {
           <Text style={styles.label}>🐾 Selecciona tu mascota</Text>
           <View style={styles.optionsGrid}>
             {mascotas.map((mascota) => (
-              <TouchableOpacity
-                key={mascota.id}
-                style={[styles.optionBtn, selectedMascota === mascota.id && styles.optionBtnActive]}
-                onPress={() => setSelectedMascota(mascota.id)}
-              >
-                <Text style={styles.optionIcon}>
-                  {mascota.especie === 'Gato' ? '🐱' :
-                   mascota.especie === 'Ave' ? '🐦' :
-                   mascota.especie === 'Conejo' ? '🐰' : '🐶'}
-                </Text>
-                <Text style={[styles.optionText, selectedMascota === mascota.id && styles.optionTextActive]}>
-                  {mascota.nombre}
-                </Text>
-              </TouchableOpacity>
-            ))}
+  <TouchableOpacity
+    key={mascota.id}
+    style={[styles.optionBtn, selectedMascota === mascota.id && styles.optionBtnActive]}
+    onPress={() => setSelectedMascota(mascota.id)}
+  >
+    {mascota.foto ? (
+      <Image
+        source={{ uri: mascota.foto }}
+        style={styles.mascotaFoto}
+      />
+    ) : (
+      <Text style={styles.optionIcon}>
+        {mascota.especie === 'Gato' ? '🐱' :
+         mascota.especie === 'Ave' ? '🐦' :
+         mascota.especie === 'Conejo' ? '🐰' : '🐶'}
+      </Text>
+    )}
+    <Text style={[styles.optionText, selectedMascota === mascota.id && styles.optionTextActive]}>
+      {mascota.nombre}
+    </Text>
+  </TouchableOpacity>
+))}
           </View>
           {errors.mascota && <Text style={styles.errorText}>{errors.mascota}</Text>}
         </View>
@@ -365,6 +391,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
   },
   optionIcon: { fontSize: 20, marginBottom: 4 },
+  mascotaFoto: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  marginBottom: 4,
+},
   optionText: { fontSize: 13, color: COLORS.text, fontWeight: '500' },
   optionTextActive: { color: COLORS.white },
   horasGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

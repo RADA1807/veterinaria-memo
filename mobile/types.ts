@@ -30,6 +30,8 @@ export interface Cita {
   id: string;
   mascota_id: string;
   mascota_nombre?: string;
+  mascota_foto?: string;
+  especie?: string;
   propietario_id: string;
   propietario_nombre?: string;
   fecha: string;
