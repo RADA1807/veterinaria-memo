@@ -85,14 +85,26 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ error: 'Nombre y correo son obligatorios' });
     }
 
+    // Obtener usuario_id del propietario
+    const [propRows] = await db.query(
+      'SELECT usuario_id FROM propietarios WHERE id = ?',
+      [id]
+    );
+
+    if (propRows.length === 0) {
+      return res.status(404).json({ error: 'Propietario no encontrado' });
+    }
+
+    const usuarioId = propRows[0].usuario_id;
+
     await db.query(
       'UPDATE propietarios SET nombre=?, correo=?, telefono=?, fecha_actualizacion=NOW() WHERE id=?',
       [nombre, correo, telefono || null, id]
     );
 
     await db.query(
-      'UPDATE usuarios SET nombre=?, email=?, telefono=?, fecha_actualizacion=NOW() WHERE id=(SELECT usuario_id FROM propietarios WHERE id=?)',
-      [nombre, correo, telefono || null, id]
+      'UPDATE usuarios SET nombre=?, email=?, telefono=?, fecha_actualizacion=NOW() WHERE id=?',
+      [nombre, correo, telefono || null, usuarioId]
     );
 
     res.json({ message: '✅ Propietario actualizado correctamente' });
@@ -101,5 +113,4 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar propietario' });
   }
 });
-
 module.exports = router;
