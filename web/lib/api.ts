@@ -64,4 +64,11 @@ export const deleteServicio = (id: string) =>
 export const generarInvitacion = () =>
   api.post('/api/generar-invitacion');
 
+// Tratamientos
+export const getTratamientos = () => api.get('/api/tratamientos');
+export const getTratamientosMascota = (mascotaId: string) => api.get(`/api/tratamientos/mascota/${mascotaId}`);
+export const createTratamiento = (data: object) => api.post('/api/tratamientos', data);
+export const updateTratamiento = (id: string, data: object) => api.put(`/api/tratamientos/${id}`, data);
+export const deleteTratamiento = (id: string) => api.delete(`/api/tratamientos/${id}`);
+
 export default api;

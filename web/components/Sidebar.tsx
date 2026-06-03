@@ -12,6 +12,7 @@ const navItems = [
   { href: '/dashboard/mascotas', label: 'Mascotas', icon: PawPrint },
   { href: '/dashboard/propietarios', label: 'Propietarios', icon: Users },
   { href: '/dashboard/servicios', label: 'Servicios', icon: Stethoscope },
+  { href: '/dashboard/tratamientos', label: 'Tratamientos', icon: Stethoscope },
   { href: '/dashboard/invitaciones', label: 'Invitaciones', icon: UserPlus },
 ];
 
