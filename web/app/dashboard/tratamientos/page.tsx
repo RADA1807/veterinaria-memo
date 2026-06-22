@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getTratamientos, createTratamiento, deleteTratamiento, getMascotas } from '@/lib/api';
-import { Stethoscope, Plus, Trash2, X, Check } from 'lucide-react';
+import { getTratamientos, createTratamiento, updateTratamiento, deleteTratamiento, getMascotas } from '@/lib/api';
+import { Stethoscope, Plus, Trash2, X, Check, Edit2 } from 'lucide-react';
 
 interface Tratamiento {
   id: number; tipo: string; descripcion: string; costo: number;
@@ -25,6 +25,7 @@ export default function TratamientosPage() {
   const [mascotas, setMascotas] = useState<Mascota[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
@@ -38,14 +39,47 @@ export default function TratamientosPage() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const openNew = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowForm(true);
+  };
+
+  const openEdit = (t: Tratamiento) => {
+    setEditingId(t.id);
+    setForm({
+      paciente_id: '',
+      tipo: t.tipo,
+      descripcion: t.descripcion || '',
+      fecha: t.fecha?.toString().split('T')[0],
+      costo: t.costo,
+      veterinario: t.veterinario || '',
+    });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await createTratamiento(form);
-      await fetchData();
+      if (editingId) {
+        await updateTratamiento(String(editingId), {
+          tipo: form.tipo,
+          descripcion: form.descripcion,
+          fecha: form.fecha,
+          costo: form.costo,
+          veterinario: form.veterinario,
+        });
+        setTratamientos(prev => prev.map(t =>
+          t.id === editingId ? { ...t, ...form } : t
+        ));
+      } else {
+        await createTratamiento(form);
+        await fetchData();
+      }
       setShowForm(false);
       setForm(emptyForm);
+      setEditingId(null);
     } finally {
       setSaving(false);
     }
@@ -59,28 +93,33 @@ export default function TratamientosPage() {
 
   return (
     <>
-      {/* Modal FUERA del page-enter para que fixed funcione correctamente */}
+      {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-800">Registrar tratamiento</h2>
+              <h2 className="font-semibold text-slate-800">
+                {editingId ? 'Editar tratamiento' : 'Registrar tratamiento'}
+              </h2>
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Mascota *</label>
-                <select required value={form.paciente_id}
-                  onChange={e => setForm(f => ({ ...f, paciente_id: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 text-sm">
-                  <option value="">Selecciona una mascota</option>
-                  {mascotas.map(m => (
-                    <option key={m.id} value={m.id}>{m.nombre} — {m.propietario_nombre}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Mascota solo al crear */}
+              {!editingId && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Mascota *</label>
+                  <select required value={form.paciente_id}
+                    onChange={e => setForm(f => ({ ...f, paciente_id: e.target.value }))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 text-sm">
+                    <option value="">Selecciona una mascota</option>
+                    {mascotas.map(m => (
+                      <option key={m.id} value={m.id}>{m.nombre} — {m.propietario_nombre}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de tratamiento *</label>
@@ -129,7 +168,7 @@ export default function TratamientosPage() {
                 <button type="submit" disabled={saving}
                   className="flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-50"
                   style={{ background: '#00A99D' }}>
-                  {saving ? 'Guardando...' : 'Registrar'}
+                  {saving ? 'Guardando...' : editingId ? 'Actualizar' : 'Registrar'}
                 </button>
               </div>
             </form>
@@ -144,7 +183,7 @@ export default function TratamientosPage() {
             <p className="text-slate-500 mt-1">{tratamientos.length} tratamientos registrados</p>
           </div>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={openNew}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
             style={{ background: '#00A99D' }}
           >
@@ -210,10 +249,17 @@ export default function TratamientosPage() {
                             </button>
                           </div>
                         ) : (
-                          <button onClick={() => setConfirmDelete(t.id)}
-                            className="text-xs px-3 py-1.5 rounded-lg text-red-500 border border-red-100 hover:bg-red-50 transition-colors flex items-center gap-1">
-                            <Trash2 className="w-3 h-3" /> Eliminar
-                          </button>
+                          <div className="flex gap-2">
+                            <button onClick={() => openEdit(t)}
+                              className="text-xs px-3 py-1.5 rounded-lg text-white flex items-center gap-1"
+                              style={{ background: '#00A99D' }}>
+                              <Edit2 className="w-3 h-3" /> Editar
+                            </button>
+                            <button onClick={() => setConfirmDelete(t.id)}
+                              className="text-xs px-3 py-1.5 rounded-lg text-red-500 border border-red-100 hover:bg-red-50 transition-colors flex items-center gap-1">
+                              <Trash2 className="w-3 h-3" /> Eliminar
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

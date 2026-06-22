@@ -188,10 +188,6 @@ export default function ServiciosPage() {
               {s.descripcion && <p className="text-sm text-slate-400 mb-3 line-clamp-2">{s.descripcion}</p>}
 
               <div className="flex gap-4 mt-auto">
-                <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                  <Clock className="w-3.5 h-3.5" />
-                  {s.duracion_minutos} min
-                </div>
                 <div className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: '#00A99D' }}>
                   <DollarSign className="w-3.5 h-3.5" />
                   ₡{s.precio?.toLocaleString()}
