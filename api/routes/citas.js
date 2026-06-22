@@ -4,16 +4,7 @@ const db = require('../models/db');
 const { v4: uuidv4 } = require('uuid');
 
 // Servicios disponibles de Veterinaria Memo
-const SERVICIOS_DISPONIBLES = [
-  'Consulta veterinaria',
-  'Ultrasonido',
-  'Rayos X',
-  'Grooming',
-  'Hemogramas',
-  'Limpieza dental',
-  'Nutrición animal',
-  'Farmacia'
-];
+
 
 // 📅 Crear cita
 router.post('/', async (req, res) => {
@@ -25,9 +16,13 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
-    if (!SERVICIOS_DISPONIBLES.includes(servicio)) {
-      return res.status(400).json({ error: 'Servicio no válido' });
-    }
+    const [servicioRows] = await db.query(
+  'SELECT id FROM servicios WHERE nombre = ? AND activo = true',
+  [servicio]
+);
+if (servicioRows.length === 0) {
+  return res.status(400).json({ error: 'Servicio no válido' });
+}
 
     // Validar que la fecha no sea domingo
     const diaSemana = new Date(fecha).getDay();
