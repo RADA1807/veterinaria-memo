@@ -52,7 +52,7 @@ router.put('/:id', async (req, res) => {
 
     const [result] = await db.query(
       'UPDATE servicios SET nombre=?, descripcion=?, duracion_minutos=?, precio=?, activo=? WHERE id=?',
-      [nombre, descripcion || '', duracion_minutos || 30, precio || 0, activo !== undefined ? activo : true, id]
+      [nombre, descripcion || '', duracion_minutos || 30, precio || 0, activo !== undefined ? activo : true, Number(id)]
     );
 
     if (result.affectedRows === 0) {
