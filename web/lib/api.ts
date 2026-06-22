@@ -38,8 +38,8 @@ export const getPropietarios = () => api.get('/api/propietarios');
 export const getServicios = () => api.get('/api/servicios');
 
 // Citas
-export const updateEstadoCita = (id: string, estado: string) =>
-  api.put(`/api/citas/${id}/estado`, { estado });
+export const updateEstadoCita = (id: string, estado: string, nota_admin?: string) =>
+  api.put(`/api/citas/${id}/estado`, { estado, nota_admin });
 
 // Mascotas
 export const updateMascota = (id: string, data: object) =>
