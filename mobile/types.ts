@@ -39,6 +39,7 @@ export interface Cita {
   motivo: string;
   servicio: string;
   estado: 'pendiente' | 'confirmada' | 'cancelada' | 'completada';
+  nota_admin?: string;
 }
 
 export interface Servicio {

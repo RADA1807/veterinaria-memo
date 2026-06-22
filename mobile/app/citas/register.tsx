@@ -230,11 +230,15 @@ export default function RegisterCitaScreen() {
     <Text style={[styles.optionText, selectedServicio === servicio.nombre && styles.optionTextActive]}>
       {servicio.nombre}
     </Text>
-    {Number(servicio.precio) > 0 && (
-      <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
-        ₡{Number(servicio.precio).toLocaleString()}
-      </Text>
-    )}
+    {Number(servicio.precio) > 0 ? (
+  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+    {servicio.nombre === 'Grooming' ? `₡${Number(servicio.precio).toLocaleString()} en adelante` : `₡${Number(servicio.precio).toLocaleString()}`}
+  </Text>
+) : (
+  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+    Precio según valoración
+  </Text>
+)}
   </TouchableOpacity>
 ))}
           </View>
