@@ -86,6 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(data.error || 'Error al iniciar sesión');
     }
 
+    if (data.rol === 'admin') {
+      throw new Error('Esta cuenta es de administrador. Usa el panel web para iniciar sesión.');
+    }
+
     const usuarioData = {
       id: data.usuarioId,
       nombre: data.nombre,
