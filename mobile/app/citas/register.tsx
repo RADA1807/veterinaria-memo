@@ -49,16 +49,18 @@ export default function RegisterCitaScreen() {
   ];
 
   const fetchServicios = async () => {
-    try {
-      const response = await fetch(`${API_URL}/servicios`);
-      if (response.ok) {
-        const data = await response.json();
-        setServicios(data);
-      }
-    } catch (error) {
-      console.error('Error al cargar servicios:', error);
+  try {
+    const response = await fetch(`${API_URL}/servicios`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setServicios(data);
     }
-  };
+  } catch (error) {
+    console.error('Error al cargar servicios:', error);
+  }
+};
 
   const fetchHorasOcupadas = async (fechaStr: string, selectedDate: Date) => {
     setLoadingHoras(true);
