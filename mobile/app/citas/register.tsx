@@ -221,17 +221,22 @@ export default function RegisterCitaScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>💉 Tipo de servicio</Text>
           <View style={styles.optionsGrid}>
-            {servicios.map((servicio) => (
-              <TouchableOpacity
-                key={servicio.id}
-                style={[styles.optionBtn, selectedServicio === servicio.nombre && styles.optionBtnActive]}
-                onPress={() => setSelectedServicio(servicio.nombre)}
-              >
-                <Text style={[styles.optionText, selectedServicio === servicio.nombre && styles.optionTextActive]}>
-                  {servicio.nombre}
-                </Text>
-              </TouchableOpacity>
-            ))}
+           {servicios.map((servicio) => (
+  <TouchableOpacity
+    key={servicio.id}
+    style={[styles.optionBtn, selectedServicio === servicio.nombre && styles.optionBtnActive]}
+    onPress={() => setSelectedServicio(servicio.nombre)}
+  >
+    <Text style={[styles.optionText, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+      {servicio.nombre}
+    </Text>
+    {Number(servicio.precio) > 0 && (
+      <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+        ₡{Number(servicio.precio).toLocaleString()}
+      </Text>
+    )}
+  </TouchableOpacity>
+))}
           </View>
           {errors.servicio && <Text style={styles.errorText}>{errors.servicio}</Text>}
         </View>
@@ -455,4 +460,5 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.7 },
   buttonText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
+optionPrecio: { fontSize: 11, color: COLORS.teal, fontWeight: '500', marginTop: 2 },
 });
