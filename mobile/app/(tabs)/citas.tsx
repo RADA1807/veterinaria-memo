@@ -137,6 +137,18 @@ export default function CitasScreen() {
         }
         renderItem={({ item }) => {
           if (!item.id) return null;
+
+          const getServicioEmoji = (servicio: string) => {
+            const s = servicio?.toLowerCase() || '';
+            if (s.includes('farmacia')) return '💊';
+            if (s.includes('grooming')) return '✂️';
+            if (s.includes('dental')) return '🦷';
+            if (s.includes('rayos')) return '🩻';
+            if (s.includes('ultrasonido')) return '📡';
+            if (s.includes('hemograma')) return '🩸';
+            if (s.includes('nutrici')) return '🥗';
+            return '🩺';
+          };
           return (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
@@ -165,10 +177,10 @@ export default function CitasScreen() {
               </View>
 
               <View style={styles.cardBody}>
-                <Text style={styles.cardServicio}>💉 {item.servicio}</Text>
+                <Text style={styles.cardServicio}>{getServicioEmoji(item.servicio)} {item.servicio}</Text>
                 <Text style={styles.cardFecha}>📅 {item.fecha?.toString().split('T')[0]} · ⏰ {item.hora?.toString().slice(0, 5)}</Text>
                 <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
-                {(item as any).nota_admin && (
+                {(item as any).nota_admin && (item as any).nota_admin.trim() !== '' && (
                   <View style={styles.notaAdmin}>
                     <Text style={styles.notaAdminText}>💬 {(item as any).nota_admin}</Text>
                   </View>
