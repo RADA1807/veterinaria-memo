@@ -139,16 +139,17 @@ export default function CitasScreen() {
           if (!item.id) return null;
 
           const getServicioEmoji = (servicio: string) => {
-            const s = servicio?.toLowerCase() || '';
-            if (s.includes('farmacia')) return '💊';
-            if (s.includes('grooming')) return '✂️';
-            if (s.includes('dental')) return '🦷';
-            if (s.includes('rayos')) return '🩻';
-            if (s.includes('ultrasonido')) return '📡';
-            if (s.includes('hemograma')) return '🩸';
-            if (s.includes('nutrici')) return '🥗';
-            return '🩺';
-          };
+  const s = servicio?.toLowerCase() || '';
+  if (s.includes('farmacia')) return '💊';
+  if (s.includes('grooming')) return '✂️';
+  if (s.includes('dental')) return '🦷';
+  if (s.includes('rayos')) return '🩻';
+  if (s.includes('ultrasonido')) return '📡';
+  if (s.includes('hemograma')) return '🩸';
+  if (s.includes('nutrici')) return '🥗';
+  if (s.includes('vacun')) return '💉';
+  return '🩺';
+};
           return (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
