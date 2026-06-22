@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getServicios, createServicio, updateServicio, deleteServicio } from '@/lib/api';
-import { Stethoscope, Plus, Edit2, Trash2, X, Check, Clock, DollarSign } from 'lucide-react';
+import { Stethoscope, Plus, Edit2, Trash2, X, Check } from 'lucide-react';
 
 interface Servicio {
   id: string; nombre: string; descripcion: string;
@@ -189,7 +189,6 @@ export default function ServiciosPage() {
 
               <div className="flex gap-4 mt-auto">
                 <div className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: '#00A99D' }}>
-                  <DollarSign className="w-3.5 h-3.5" />
                   ₡{s.precio?.toLocaleString()}
                 </div>
               </div>
