@@ -111,7 +111,7 @@ router.get('/', async (req, res) => {
       const propietarioId = propRows[0].id;
 
       const [rows] = await db.query(`
-  SELECT c.id, c.fecha, c.hora, c.motivo, c.servicio, c.estado,
+  SELECT c.id, c.fecha, c.hora, c.motivo, c.servicio, c.estado, c.nota_admin,
          m.nombre AS mascota_nombre, m.especie, m.foto AS mascota_foto
   FROM citas c
   INNER JOIN mascotas m ON c.mascota_id = m.id
@@ -197,7 +197,7 @@ router.put('/:id', async (req, res) => {
 router.put('/:id/estado', async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado } = req.body;
+    const { estado, nota_admin } = req.body;
 
     if (req.user.rol !== 'admin') {
       return res.status(403).json({ error: 'Solo el administrador puede cambiar el estado' });
@@ -209,8 +209,8 @@ router.put('/:id/estado', async (req, res) => {
     }
 
     const [result] = await db.query(
-      'UPDATE citas SET estado=?, fecha_actualizacion=NOW() WHERE id=?',
-      [estado, id]
+      'UPDATE citas SET estado=?, nota_admin=?, fecha_actualizacion=NOW() WHERE id=?',
+      [estado, nota_admin || null, id]
     );
 
     if (result.affectedRows === 0) {

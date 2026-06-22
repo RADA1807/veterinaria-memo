@@ -168,6 +168,11 @@ export default function CitasScreen() {
                 <Text style={styles.cardServicio}>💉 {item.servicio}</Text>
                 <Text style={styles.cardFecha}>📅 {item.fecha?.toString().split('T')[0]} · ⏰ {item.hora?.toString().slice(0, 5)}</Text>
                 <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
+                {(item as any).nota_admin && (
+                  <View style={styles.notaAdmin}>
+                    <Text style={styles.notaAdminText}>💬 {(item as any).nota_admin}</Text>
+                  </View>
+                )}
               </View>
 
               {item.estado === 'pendiente' && (
@@ -262,4 +267,13 @@ const styles = StyleSheet.create({
   editBtn: { backgroundColor: COLORS.secondary },
   cancelBtn: { backgroundColor: COLORS.danger },
   actionBtnText: { color: COLORS.white, fontSize: 13, fontWeight: '500' },
+  notaAdmin: {
+    marginTop: 8,
+    backgroundColor: '#E6F7F6',
+    borderRadius: 8,
+    padding: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.teal,
+  },
+  notaAdminText: { fontSize: 13, color: COLORS.primary, fontWeight: '500' },
 });
