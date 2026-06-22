@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getServicios, createServicio, updateServicio, deleteServicio } from '@/lib/api';
-import { Stethoscope, Plus, Edit2, Trash2, X, Check } from 'lucide-react';
+import { Stethoscope, Plus, Edit2, Trash2, X, Check, Scissors, SmilePlus, Droplets, Leaf, ShoppingBag, Radiation, Activity } from 'lucide-react';
 
 interface Servicio {
   id: string; nombre: string; descripcion: string;
@@ -57,6 +57,18 @@ export default function ServiciosPage() {
     setServicios(prev => prev.filter(s => s.id !== id));
     setConfirmDelete(null);
   };
+
+ const getServicioIcon = (nombre: string) => {
+  const n = nombre.toLowerCase();
+  if (n.includes('farmacia')) return <ShoppingBag className="w-5 h-5" style={{ color: '#00A99D' }} />;
+  if (n.includes('grooming')) return <Scissors className="w-5 h-5" style={{ color: '#00A99D' }} />;
+  if (n.includes('dental')) return <SmilePlus className="w-5 h-5" style={{ color: '#00A99D' }} />;
+ if (n.includes('rayos')) return <Radiation className="w-5 h-5" style={{ color: '#00A99D' }} />;
+if (n.includes('ultrasonido')) return <Activity className="w-5 h-5" style={{ color: '#00A99D' }} />;
+  if (n.includes('hemograma')) return <Droplets className="w-5 h-5" style={{ color: '#00A99D' }} />;
+  if (n.includes('nutrici')) return <Leaf className="w-5 h-5" style={{ color: '#00A99D' }} />;
+  return <Stethoscope className="w-5 h-5" style={{ color: '#00A99D' }} />;
+};
 
   return (
     <div className="p-8 page-enter">
@@ -157,7 +169,7 @@ export default function ServiciosPage() {
             <div key={s.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#E6F7F6' }}>
-                  <Stethoscope className="w-5 h-5" style={{ color: '#00A99D' }} />
+                  {getServicioIcon(s.nombre)}
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => startEdit(s)}
