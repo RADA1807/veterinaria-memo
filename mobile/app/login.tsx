@@ -16,6 +16,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -86,17 +87,25 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contraseña</Text>
-            <TextInput
-              style={[styles.input, errors.password ? styles.inputError : null]}
-              placeholder="Tu contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholderTextColor={COLORS.textSecondary}
-            />
-            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-          </View>
+  <Text style={styles.label}>Contraseña</Text>
+  <View style={styles.passwordContainer}>
+    <TextInput
+      style={[styles.passwordInput, errors.password ? styles.inputError : null]}
+      placeholder="Tu contraseña"
+      value={password}
+      onChangeText={setPassword}
+      secureTextEntry={!showPassword}
+      placeholderTextColor={COLORS.textSecondary}
+    />
+    <TouchableOpacity
+      style={styles.eyeBtn}
+      onPress={() => setShowPassword(!showPassword)}
+    >
+      <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+    </TouchableOpacity>
+  </View>
+  {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+</View>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -135,10 +144,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 8,
-  },
+  width: 130,
+  height: 130,
+  marginBottom: 8,
+},
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -209,4 +218,24 @@ title: {
   linkBold: { color: COLORS.white, fontWeight: 'bold' },
   backBtn: { marginTop: 16, alignItems: 'center' },
   backText: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  passwordContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.4)',
+  borderRadius: 10,
+  backgroundColor: COLORS.white,
+},
+passwordInput: {
+  flex: 1,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  fontSize: 15,
+  color: COLORS.text,
+},
+eyeBtn: {
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+},
+eyeIcon: { fontSize: 18 },
 });
