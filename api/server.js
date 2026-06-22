@@ -44,13 +44,13 @@ app.use('/api/citas', verifyToken, citasRoutes);
 
 // Rutas solo para admin
 app.use('/api/propietarios', verifyToken, checkRole('admin'), propietariosRoutes);
-app.use('/api/servicios', serviciosRoutes);
+app.use('/api/servicios', verifyToken, serviciosRoutes);
 app.use('/api/upload', verifyToken, uploadRoutes);
 app.use('/api/tratamientos', verifyToken, tratamientosRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: '✅ API Veterinaria Memo funcionando',
     version: '2.0.0',
   });
