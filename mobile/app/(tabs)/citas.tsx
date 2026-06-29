@@ -188,21 +188,23 @@ export default function CitasScreen() {
                 )}
               </View>
 
-              {item.estado === 'pendiente' && (
-                <View style={styles.cardActions}>
-                  <TouchableOpacity
-                    style={[styles.actionBtn, styles.editBtn]}
-                    onPress={() => router.push(`/citas/edit/${item.id}`)}
-                  >
-                    <Text style={styles.actionBtnText}>✏️ Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.actionBtn, styles.cancelBtn]}
-                    onPress={() => handleCancelar(item.id)}
-                  >
-                    <Text style={styles.actionBtnText}>❌ Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
+              {(item.estado === 'pendiente' || item.estado === 'confirmada') && (
+  <View style={styles.cardActions}>
+    {item.estado === 'pendiente' && (
+      <TouchableOpacity
+        style={[styles.actionBtn, styles.editBtn]}
+        onPress={() => router.push(`/citas/edit/${item.id}`)}
+      >
+        <Text style={styles.actionBtnText}>✏️ Editar</Text>
+      </TouchableOpacity>
+    )}
+    <TouchableOpacity
+      style={[styles.actionBtn, styles.cancelBtn]}
+      onPress={() => handleCancelar(item.id)}
+    >
+      <Text style={styles.actionBtnText}>❌ Cancelar</Text>
+    </TouchableOpacity>
+  </View>
               )}
             </View>
           );
