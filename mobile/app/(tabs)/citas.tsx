@@ -33,10 +33,14 @@ export default function CitasScreen() {
   };
 
   useFocusEffect(
-    useCallback(() => {
+  useCallback(() => {
+    fetchCitas();
+    const interval = setInterval(() => {
       fetchCitas();
-    }, [])
-  );
+    }, 10000); // cada 30 segundos
+    return () => clearInterval(interval);
+  }, [])
+);
 
   const onRefresh = async () => {
     setRefreshing(true);

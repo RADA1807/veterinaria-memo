@@ -51,9 +51,16 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+  fetchCitas();
+  fetchMascotas();
+
+  const interval = setInterval(() => {
     fetchCitas();
     fetchMascotas();
-  }, []);
+  }, 10000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const citasPendientes = citas.filter(c => c.estado === 'pendiente');
   const citasConfirmadas = citas.filter(c => c.estado === 'confirmada');

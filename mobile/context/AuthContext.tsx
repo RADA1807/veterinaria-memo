@@ -33,8 +33,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    loadSession();
-  }, []);
+  loadSession();
+}, []);
+
+// Polling global cada 30 segundos
+useEffect(() => {
+  if (!token) return;
+  const interval = setInterval(() => {
+    refreshMascotas();
+  }, 10000);
+  return () => clearInterval(interval);
+}, [token]);
 
   const loadSession = async () => {
     try {
