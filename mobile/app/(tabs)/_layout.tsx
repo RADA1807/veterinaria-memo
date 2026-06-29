@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import { COLORS } from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import { TouchableOpacity, Text, View, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { logout, usuario } = useAuth();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -15,8 +17,9 @@ export default function TabLayout() {
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.grayBorder,
-          height: 60,
-          paddingBottom: 8,
+          paddingBottom: insets.bottom + 5,
+          paddingTop: 5,
+          height: 55 + insets.bottom,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -34,31 +37,19 @@ export default function TabLayout() {
             borderBottomWidth: 3,
             borderBottomColor: COLORS.teal,
           }}>
-            {/* Logo a la izquierda */}
             <Image
               source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
               style={{ width: 90, height: 90 }}
               resizeMode="contain"
             />
-
-            {/* Saludo al centro */}
             <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={{
-                color: COLORS.textSecondary,
-                fontSize: 12,
-              }}>
+              <Text style={{ color: COLORS.textSecondary, fontSize: 12 }}>
                 Bienvenido
               </Text>
-              <Text style={{
-                color: COLORS.primary,
-                fontSize: 15,
-                fontWeight: 'bold',
-              }}>
+              <Text style={{ color: COLORS.primary, fontSize: 15, fontWeight: 'bold' }}>
                 {usuario?.nombre?.split(' ')[0]} 👋
               </Text>
             </View>
-
-            {/* Botón salir a la derecha */}
             <TouchableOpacity
               onPress={logout}
               style={{
