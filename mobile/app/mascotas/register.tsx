@@ -6,6 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL, ESPECIES } from '../../config';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterMascotaScreen() {
   const router = useRouter();
@@ -76,23 +77,23 @@ export default function RegisterMascotaScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+    
+      <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Volver</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Image
-            source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>Nueva mascota</Text>
-          <Text style={styles.subtitle}>Registra los datos de tu mascota</Text>
-        </View>
-        <View style={styles.waveLine} />
-      </View>
+  <Image
+    source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+    style={styles.logo}
+    resizeMode="contain"
+  />
+  <View style={{ flex: 1, alignItems: 'center' }}>
+    <Text style={styles.title}>Nueva mascota</Text>
+    <Text style={styles.subtitle}>Registra los datos de tu mascota</Text>
+  </View>
+  <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+    <Text style={styles.backText}>← Volver</Text>
+  </TouchableOpacity>
+</View>
 
       <View style={styles.form}>
 
@@ -195,16 +196,20 @@ export default function RegisterMascotaScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   scroll: { paddingBottom: 40 },
-  header: {
-    backgroundColor: COLORS.white,
-    paddingTop: 10,
-    paddingBottom: 0,
-    paddingHorizontal: 20,
-  },
-  backBtn: { marginBottom: 8 },
-  backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
-  headerContent: { alignItems: 'center', paddingBottom: 12 },
-  logo: { width: 70, height: 70, marginBottom: 8 },
+header: {
+  backgroundColor: COLORS.white,
+  paddingTop: 50,
+  paddingBottom: 12,
+  paddingHorizontal: 20,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderBottomWidth: 3,
+  borderBottomColor: COLORS.teal,
+},
+  backBtn: { padding: 8},
+backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
+  logo: { width: 90, height: 90 },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -216,12 +221,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     textAlign: 'center',
-  },
-  waveLine: {
-    width: '100%',
-    height: 4,
-    backgroundColor: COLORS.teal,
-    borderRadius: 2,
   },
   form: {
     backgroundColor: COLORS.white,

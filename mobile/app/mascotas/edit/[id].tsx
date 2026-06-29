@@ -190,14 +190,14 @@ export default function EditMascotaScreen() {
 
       const data = await response.json();
 
-     if (response.ok) {
-  await refreshMascotas();
-  await fetchMascota();
-  setSuccess(true);
-  setTimeout(() => {
-    router.replace('/(tabs)/mascotas');
-  }, 2000);
-} else {
+      if (response.ok) {
+        await refreshMascotas();
+        await fetchMascota();
+        setSuccess(true);
+        setTimeout(() => {
+          router.replace('/(tabs)/mascotas');
+        }, 2000);
+      } else {
         setErrors({ general: data.error || 'Error al actualizar mascota' });
       }
     } catch (error) {
@@ -230,34 +230,45 @@ export default function EditMascotaScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Volver</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          {/* Foto de mascota */}
-          <View style={styles.fotoContainer}>
-            {uploadingFoto ? (
-              <ActivityIndicator size="large" color={COLORS.teal} />
-            ) : foto ? (
-              <Image source={{ uri: foto }} style={styles.fotoMascota} />
-            ) : (
-              <View style={styles.fotoPlaceholder}>
-                <Text style={styles.fotoPlaceholderIcon}>{getMascotaIcon(especie)}</Text>
-              </View>
-            )}
-          </View>
-          <Text style={styles.title}>Editar — {nombre}</Text>
-          <View style={styles.fotoButtons}>
-            <TouchableOpacity style={styles.fotoBtn} onPress={handlePickImage}>
-              <Text style={styles.fotoBtnText}>Galería</Text>
-            </TouchableOpacity>
-            {Platform.OS !== 'web' && (
-              <TouchableOpacity style={styles.fotoBtn} onPress={handleTakePhoto}>
-                <Text style={styles.fotoBtnText}>Cámara</Text>
+        {/* Fila superior: Logo | Foto + Botones | Volver */}
+        <View style={styles.headerRow}>
+          <Image
+            source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.fotoSection}>
+            <View style={styles.fotoContainer}>
+              {uploadingFoto ? (
+                <ActivityIndicator size="large" color={COLORS.teal} />
+              ) : foto ? (
+                <Image source={{ uri: foto }} style={styles.fotoMascota} />
+              ) : (
+                <View style={styles.fotoPlaceholder}>
+                  <Text style={styles.fotoPlaceholderIcon}>{getMascotaIcon(especie)}</Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.fotoButtons}>
+              <TouchableOpacity style={styles.fotoBtn} onPress={handlePickImage}>
+                <Text style={styles.fotoBtnText}>Galería</Text>
               </TouchableOpacity>
-            )}
+              {Platform.OS !== 'web' && (
+                <TouchableOpacity style={styles.fotoBtn} onPress={handleTakePhoto}>
+                  <Text style={styles.fotoBtnText}>Cámara</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={styles.backText}>← Volver</Text>
+          </TouchableOpacity>
         </View>
+
+        {/* Título */}
+        <Text style={styles.title}>Editar — {nombre}</Text>
+
+        {/* Línea teal */}
         <View style={styles.waveLine} />
       </View>
 
@@ -363,21 +374,45 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, color: COLORS.textSecondary },
   header: {
     backgroundColor: COLORS.white,
-    paddingTop: 10,
+    paddingTop: 50,
     paddingBottom: 0,
     paddingHorizontal: 20,
   },
-  backBtn: { marginBottom: 8 },
-  backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
-  headerContent: { alignItems: 'center', paddingBottom: 12 },
-  fotoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    justifyContent: 'center',
+  headerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
+
+  logo: { width: 100, height: 100 },
+  fotoSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  fotoButtons: {
+    flexDirection: 'column',
+    gap: 6,
+  },
+
+  backBtn: { padding: 8 },
+  backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
+  fotoContainer: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+fotoBtn: {
+  backgroundColor: COLORS.teal,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
   fotoMascota: {
     width: 100,
     height: 100,
@@ -404,13 +439,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
-  fotoButtons: { flexDirection: 'row', gap: 10 },
-  fotoBtn: {
-    backgroundColor: COLORS.teal,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
+
   fotoBtnText: { color: COLORS.white, fontSize: 13, fontWeight: '500' },
   waveLine: {
     width: '100%',
