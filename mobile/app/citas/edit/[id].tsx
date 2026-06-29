@@ -60,7 +60,9 @@ export default function EditCitaScreen() {
 
   const fetchServicios = async () => {
     try {
-      const response = await fetch(`${API_URL}/servicios`);
+      const response = await fetch(`${API_URL}/servicios`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response.ok) {
         const data = await response.json();
         setServicios(data);
@@ -138,14 +140,20 @@ export default function EditCitaScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
-      {/* Header igual que otras pantallas */}
+      {/* Header */}
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.headerTitle}>Veterinaria Memo</Text>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.headerTitle}>Editar cita</Text>
+          <Text style={styles.headerSubtitle}>Modifica los datos de tu cita</Text>
+        </View>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>← Volver</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Wave */}
@@ -153,12 +161,6 @@ export default function EditCitaScreen() {
 
       {/* Form */}
       <View style={styles.form}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Volver</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Editar cita</Text>
-        <Text style={styles.subtitle}>Modifica los datos de tu cita</Text>
 
         {errors.general && (
           <View style={styles.errorBox}>
@@ -260,13 +262,19 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, color: COLORS.textSecondary },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    alignItems: 'center',
+    paddingTop: 30,
+    paddingBottom: 10,
+    paddingHorizontal: 20,
     backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  logo: { width: 100, height: 100, marginBottom: 8 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
+  logo: { width: 95, height: 95 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.primary },
+  headerSubtitle: { fontSize: 12, color: COLORS.textSecondary },
+  backBtn: { padding: 8 },
+  backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
   wave: {
     height: 30,
     backgroundColor: COLORS.teal,
@@ -279,8 +287,6 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 20,
   },
-  backBtn: { marginBottom: 8 },
-  backText: { color: 'rgba(255,255,255,0.8)', fontSize: 14 },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
