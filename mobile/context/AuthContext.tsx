@@ -41,11 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUsuario = await AsyncStorage.getItem('usuario');
 
-      if (storedToken && storedUsuario) {
-        setToken(storedToken);
-        setUsuario(JSON.parse(storedUsuario));
-        await refreshMascotas(storedToken);
-      }
+     if (storedToken && storedUsuario) {
+  setToken(storedToken);
+  const usuarioParsed = JSON.parse(storedUsuario);
+  setUsuario(usuarioParsed);
+  const mascotasData = await refreshMascotas(storedToken);
+  
+  // Si no tiene mascotas redirigir a mascota-inicial
+  const storedMascotas = await AsyncStorage.getItem('mascotas');
+  if (!storedMascotas || JSON.parse(storedMascotas).length === 0) {
+    router.replace('/mascota-inicial');
+  }
+}
     } catch (error) {
       console.error('Error cargando sesión:', error);
     } finally {

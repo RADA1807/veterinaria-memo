@@ -97,7 +97,7 @@ export default function RegisterScreen() {
           )}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nombre completo</Text>
+            <Text style={styles.label}>Nombre</Text>
             <TextInput
               style={[styles.input, errors.nombre ? styles.inputError : null]}
               placeholder="Tu nombre completo"

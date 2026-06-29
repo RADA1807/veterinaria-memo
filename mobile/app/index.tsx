@@ -7,13 +7,17 @@ import { StatusBar } from 'expo-status-bar';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { token, loading } = useAuth();
+  const { token, loading, mascotas } = useAuth();
 
   useEffect(() => {
     if (!loading && token) {
-      router.replace('/(tabs)');
+      if (mascotas && mascotas.length > 0) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/mascota-inicial');
+      }
     }
-  }, [loading, token]);
+  }, [loading, token, mascotas]);
 
   if (loading) return null;
 
