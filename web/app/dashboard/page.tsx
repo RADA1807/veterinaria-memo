@@ -16,15 +16,23 @@ export default function DashboardPage() {
   const [totalPropietarios, setTotalPropietarios] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([getCitas(), getMascotas(), getPropietarios()])
-      .then(([c, m, p]) => {
-        setCitas(c.data || []);
-        setTotalMascotas(m.data?.length || 0);
-        setTotalPropietarios(p.data?.length || 0);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchData = () => {
+  Promise.all([getCitas(), getMascotas(), getPropietarios()])
+    .then(([c, m, p]) => {
+      setCitas(c.data || []);
+      setTotalMascotas(m.data?.length || 0);
+      setTotalPropietarios(p.data?.length || 0);
+    })
+    .finally(() => setLoading(false));
+};
+
+useEffect(() => {
+  fetchData();
+  const interval = setInterval(() => {
+    fetchData();
+  }, 10000);
+  return () => clearInterval(interval);
+}, []);
 
   const pendientes = citas.filter(c => c.estado === 'pendiente').length;
   const confirmadas = citas.filter(c => c.estado === 'confirmada').length;

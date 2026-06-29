@@ -42,7 +42,13 @@ export default function CitasPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCitas(); }, []);
+  useEffect(() => {
+  fetchCitas();
+  const interval = setInterval(() => {
+    fetchCitas();
+  }, 10000);
+  return () => clearInterval(interval);
+}, []);
 
   const handleEstadoClick = (id: string, estado: string, label: string) => {
     if (estado === 'confirmada') {
