@@ -49,18 +49,18 @@ export default function RegisterCitaScreen() {
   ];
 
   const fetchServicios = async () => {
-  try {
-    const response = await fetch(`${API_URL}/servicios/para-citas`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (response.ok) {
-      const data = await response.json();
-      setServicios(data);
+    try {
+      const response = await fetch(`${API_URL}/servicios/para-citas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setServicios(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar servicios:', error);
     }
-  } catch (error) {
-    console.error('Error al cargar servicios:', error);
-  }
-};
+  };
 
   const fetchHorasOcupadas = async (fechaStr: string, selectedDate: Date) => {
     setLoadingHoras(true);
@@ -116,7 +116,7 @@ export default function RegisterCitaScreen() {
       if (diaSemana === 0) newErrors.fecha = 'No atendemos los domingos';
     }
     if (!hora) newErrors.hora = 'Selecciona una hora disponible';
-    if (!motivo) newErrors.motivo = 'El motivo es obligatorio';
+    if (selectedServicio === 'Consulta veterinaria' && !motivo) newErrors.motivo = 'El motivo es obligatorio';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -163,19 +163,19 @@ export default function RegisterCitaScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
 
       <View style={styles.header}>
-  <Image
-    source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
-    style={styles.logo}
-    resizeMode="contain"
-  />
-  <View style={{ flex: 1, alignItems: 'center' }}>
-    <Text style={styles.title}>Solicitar cita</Text>
-    <Text style={styles.subtitle}>Lunes a Sábado 7am-6pm</Text>
-  </View>
-  <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-    <Text style={styles.backText}>← Volver</Text>
-  </TouchableOpacity>
-</View>
+        <Image
+          source={{ uri: 'https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png' }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.title}>Solicitar cita</Text>
+          <Text style={styles.subtitle}>Lunes a Sábado 7am-6pm</Text>
+        </View>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>← Volver</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.form}>
 
@@ -220,26 +220,26 @@ export default function RegisterCitaScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>💉 Tipo de servicio</Text>
           <View style={styles.optionsGrid}>
-           {servicios.map((servicio) => (
-  <TouchableOpacity
-    key={servicio.id}
-    style={[styles.optionBtn, selectedServicio === servicio.nombre && styles.optionBtnActive]}
-    onPress={() => setSelectedServicio(servicio.nombre)}
-  >
-    <Text style={[styles.optionText, selectedServicio === servicio.nombre && styles.optionTextActive]}>
-      {servicio.nombre}
-    </Text>
-    {Number(servicio.precio) > 0 ? (
-  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
-    {servicio.nombre === 'Grooming' ? `₡${Number(servicio.precio).toLocaleString()} en adelante` : `₡${Number(servicio.precio).toLocaleString()}`}
-  </Text>
-) : (
-  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
-    Precio según valoración
-  </Text>
-)}
-  </TouchableOpacity>
-))}
+            {servicios.map((servicio) => (
+              <TouchableOpacity
+                key={servicio.id}
+                style={[styles.optionBtn, selectedServicio === servicio.nombre && styles.optionBtnActive]}
+                onPress={() => setSelectedServicio(servicio.nombre)}
+              >
+                <Text style={[styles.optionText, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+                  {servicio.nombre}
+                </Text>
+                {Number(servicio.precio) > 0 ? (
+                  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+                    {servicio.nombre === 'Grooming' ? `₡${Number(servicio.precio).toLocaleString()} en adelante` : `₡${Number(servicio.precio).toLocaleString()}`}
+                  </Text>
+                ) : (
+                  <Text style={[styles.optionPrecio, selectedServicio === servicio.nombre && styles.optionTextActive]}>
+                    Precio según valoración
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
           </View>
           {errors.servicio && <Text style={styles.errorText}>{errors.servicio}</Text>}
         </View>
@@ -310,7 +310,9 @@ export default function RegisterCitaScreen() {
 
         {/* Motivo */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>📝 Motivo de la cita</Text>
+          <Text style={styles.label}>
+            {selectedServicio === 'Consulta veterinaria' ? '📝 Motivo de la consulta' : '📝 Información adicional (opcional)'}
+          </Text>
           <TextInput
             style={[styles.input, styles.textArea, errors.motivo ? styles.inputError : null]}
             placeholder="Describe el motivo de la consulta..."
@@ -342,17 +344,17 @@ export default function RegisterCitaScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.grayLight },
   scroll: { paddingBottom: 40 },
- header: {
-  backgroundColor: COLORS.white,
-  paddingTop: 50,
-  paddingBottom: 12,
-  paddingHorizontal: 20,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderBottomWidth: 3,
-  borderBottomColor: COLORS.teal,
-},
+  header: {
+    backgroundColor: COLORS.white,
+    paddingTop: 50,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 3,
+    borderBottomColor: COLORS.teal,
+  },
   backBtn: { padding: 8 },
   backText: { color: COLORS.teal, fontSize: 14, fontWeight: '500' },
   logo: { width: 90, height: 90 },
@@ -467,5 +469,5 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.7 },
   buttonText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
-optionPrecio: { fontSize: 11, color: COLORS.teal, fontWeight: '500', marginTop: 2 },
+  optionPrecio: { fontSize: 11, color: COLORS.teal, fontWeight: '500', marginTop: 2 },
 });
