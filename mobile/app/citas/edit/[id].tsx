@@ -59,10 +59,10 @@ export default function EditCitaScreen() {
   };
 
   const fetchServicios = async () => {
-    try {
-      const response = await fetch(`${API_URL}/servicios`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  try {
+    const response = await fetch(`${API_URL}/servicios/para-citas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
       if (response.ok) {
         const data = await response.json();
         setServicios(data);

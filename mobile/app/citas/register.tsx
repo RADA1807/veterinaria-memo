@@ -50,7 +50,7 @@ export default function RegisterCitaScreen() {
 
   const fetchServicios = async () => {
   try {
-    const response = await fetch(`${API_URL}/servicios`, {
+    const response = await fetch(`${API_URL}/servicios/para-citas`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
