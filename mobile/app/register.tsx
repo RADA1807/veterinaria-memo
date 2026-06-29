@@ -13,6 +13,8 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuth();
   const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [cedula, setCedula] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -23,6 +25,8 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{
     nombre?: string;
+    apellido?: string;
+    cedula?: string;
     email?: string;
     telefono?: string;
     password?: string;
@@ -33,6 +37,9 @@ export default function RegisterScreen() {
   const validate = () => {
     const newErrors: typeof errors = {};
     if (!nombre) newErrors.nombre = 'El nombre es obligatorio';
+    else if (nombre.length < 2) newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
+    if (!apellido) newErrors.apellido = 'El apellido es obligatorio';
+    else if (apellido.length < 2) newErrors.apellido = 'El apellido debe tener al menos 2 caracteres';
     if (!email) newErrors.email = 'El correo es obligatorio';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Correo inválido';
     if (!telefono) newErrors.telefono = 'El teléfono es obligatorio';
@@ -49,7 +56,7 @@ export default function RegisterScreen() {
     setLoading(true);
     setErrors({});
     try {
-      await register(nombre.trim(), email.trim(), telefono.trim(), password, direccion.trim());
+      await register(nombre.trim(), apellido.trim(), cedula.trim(), email.trim(), telefono.trim(), password, direccion.trim());
     } catch (error: any) {
       setErrors({ general: error.message || 'Error al registrarse' });
     } finally {
@@ -99,6 +106,31 @@ export default function RegisterScreen() {
               placeholderTextColor={COLORS.textSecondary}
             />
             {errors.nombre && <Text style={styles.errorText}>{errors.nombre}</Text>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Apellido</Text>
+            <TextInput
+              style={[styles.input, errors.apellido ? styles.inputError : null]}
+              placeholder="Tu apellido"
+              value={apellido}
+              onChangeText={setApellido}
+              placeholderTextColor={COLORS.textSecondary}
+            />
+            {errors.apellido && <Text style={styles.errorText}>{errors.apellido}</Text>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Cédula</Text>
+            <TextInput
+              style={[styles.input, errors.cedula ? styles.inputError : null]}
+              placeholder="Tu número de cédula"
+              value={cedula}
+              onChangeText={setCedula}
+              keyboardType="numeric"
+              placeholderTextColor={COLORS.textSecondary}
+            />
+            {errors.cedula && <Text style={styles.errorText}>{errors.cedula}</Text>}
           </View>
 
           <View style={styles.inputGroup}>

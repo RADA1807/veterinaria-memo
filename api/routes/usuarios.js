@@ -16,10 +16,10 @@ const authLimiter = rateLimit({
 
 // 📌 Registrar usuario + propietario
 router.post('/register', authLimiter, async (req, res) => {
-  const { nombre, email, telefono, password, direccion } = req.body;
+  const { nombre, apellido, cedula, email, telefono, password, direccion } = req.body;
 
-  if (!nombre || !email || !password) {
-    return res.status(400).json({ error: 'Nombre, email y password son obligatorios' });
+  if (!nombre || !apellido || !email || !password) {
+    return res.status(400).json({ error: 'Nombre, apellido, email y password son obligatorios' });
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,14 +41,14 @@ router.post('/register', authLimiter, async (req, res) => {
     const usuarioId = uuidv4();
 
     await db.query(
-      'INSERT INTO usuarios (id, nombre, email, telefono, password, rol, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
-      [usuarioId, nombre, email, telefono || null, hashedPassword, 'propietario']
+      'INSERT INTO usuarios (id, nombre, apellido, cedula, email, telefono, password, rol, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [usuarioId, nombre, apellido || null, cedula || null, email, telefono || null, hashedPassword, 'propietario']
     );
 
     const propietarioId = uuidv4();
     await db.query(
-      'INSERT INTO propietarios (id, nombre, telefono, correo, direccion, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
-      [propietarioId, nombre, telefono || null, email, direccion || null, usuarioId]
+      'INSERT INTO propietarios (id, nombre, apellido, cedula, telefono, correo, direccion, usuario_id, fecha_creacion, fecha_actualizacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [propietarioId, nombre, apellido || null, cedula || null, telefono || null, email, direccion || null, usuarioId]
     );
 
     const token = jwt.sign(
@@ -63,6 +63,7 @@ router.post('/register', authLimiter, async (req, res) => {
       usuarioId,
       propietarioId,
       nombre,
+      apellido,
       email,
     });
   } catch (error) {

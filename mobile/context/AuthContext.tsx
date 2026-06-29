@@ -17,7 +17,7 @@ interface AuthContextType {
   mascotas: Mascota[];
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (nombre: string, email: string, telefono: string, password: string, direccion?: string) => Promise<void>;
+  register: (nombre: string, apellido: string, cedula: string, email: string, telefono: string, password: string, direccion?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateMascotas: (mascotas: Mascota[]) => void;
   refreshMascotas: () => Promise<void>;
@@ -113,11 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (nombre: string, email: string, telefono: string, password: string, direccion?: string) => {
+  const register = async (nombre: string, apellido: string, cedula: string, email: string, telefono: string, password: string, direccion?: string) => {
     const response = await fetch(`${API_URL}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, email, telefono, password, direccion }),
+      body: JSON.stringify({ nombre, apellido, cedula, email, telefono, password, direccion }),
     });
 
     const data = await response.json();
