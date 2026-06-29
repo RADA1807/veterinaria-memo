@@ -15,6 +15,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// 📋 Obtener servicios que requieren cita
+router.get('/para-citas', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT id, nombre, descripcion, duracion_minutos, precio FROM servicios WHERE activo = true AND requiere_cita = true ORDER BY nombre ASC'
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ Error al obtener servicios para citas:', err);
+    res.status(500).json({ error: 'Error al obtener servicios' });
+  }
+});
+
 // ➕ Crear servicio (solo admin)
 router.post('/', async (req, res) => {
   try {
@@ -84,19 +97,6 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error('❌ Error al eliminar servicio:', err);
     res.status(500).json({ error: 'Error al eliminar servicio' });
-  }
-});
-
-// 📋 Obtener servicios que requieren cita
-router.get('/para-citas', async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      'SELECT id, nombre, descripcion, duracion_minutos, precio FROM servicios WHERE activo = true AND requiere_cita = true ORDER BY nombre ASC'
-    );
-    res.json(rows);
-  } catch (err) {
-    console.error('❌ Error al obtener servicios para citas:', err);
-    res.status(500).json({ error: 'Error al obtener servicios' });
   }
 });
 
