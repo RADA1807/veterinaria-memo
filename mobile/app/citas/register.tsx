@@ -83,16 +83,31 @@ export default function RegisterCitaScreen() {
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-        if (fechaStr === todayStr) {
-          const horaActual = now.getHours() * 60 + now.getMinutes();
-          const horasPasadas = HORAS_DISPONIBLES.filter(h => {
-            const [hh, mm] = h.split(':').map(Number);
-            return hh * 60 + mm <= horaActual;
-          });
-          setHorasOcupadas([...data, ...horasPasadas]);
-        } else {
-          setHorasOcupadas(data);
-        }
+        // Calcular horas con buffer de 1 hora entre citas
+const horasConBuffer: string[] = [...data];
+data.forEach((horaOcupada: string) => {
+  const [hh, mm] = horaOcupada.split(':').map(Number);
+  const totalMin = hh * 60 + mm;
+  HORAS_DISPONIBLES.forEach(h => {
+    const [hhD, mmD] = h.split(':').map(Number);
+    const diff = totalMin - (hhD * 60 + mmD);
+    if (diff > 0 && diff <= 60) {
+      horasConBuffer.push(h);
+    }
+  });
+});
+
+if (fechaStr === todayStr) {
+  // Bloquear horas pasadas + 1 hora de anticipación mínima
+  const horaActual = now.getHours() * 60 + now.getMinutes();
+  const horasPasadas = HORAS_DISPONIBLES.filter(h => {
+    const [hh, mm] = h.split(':').map(Number);
+    return hh * 60 + mm <= horaActual + 60;
+  });
+  setHorasOcupadas([...new Set([...horasConBuffer, ...horasPasadas])]);
+} else {
+  setHorasOcupadas([...new Set(horasConBuffer)]);
+}
       }
     } catch (error) {
       console.error('Error al cargar horas ocupadas:', error);
