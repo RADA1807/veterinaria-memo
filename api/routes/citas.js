@@ -12,9 +12,12 @@ router.post('/', async (req, res) => {
     const { mascota_id, fecha, hora, motivo, servicio } = req.body;
     const usuarioId = req.user.id;
 
-    if (!mascota_id || !fecha || !hora || !motivo || !servicio) {
-      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-    }
+    if (!mascota_id || !fecha || !hora || !servicio) {
+  return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+}
+if (!motivo && servicio === 'Consulta veterinaria') {
+  return res.status(400).json({ error: 'El motivo es obligatorio para consultas veterinarias' });
+}
 
     const [servicioRows] = await db.query(
   'SELECT id FROM servicios WHERE nombre = ? AND activo = true',
