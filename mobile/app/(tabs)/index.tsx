@@ -17,32 +17,33 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchMascotas = async () => {
-    try {
-      const response = await fetch(`${API_URL}/mascotas`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMascotas(data);
-      }
-    } catch (error) {
-      console.error('Error al cargar mascotas:', error);
+  try {
+    const response = await fetch(`${API_URL}/mascotas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setMascotas(prev => JSON.stringify(prev) === JSON.stringify(data) ? prev : data);
     }
-  };
+  } catch (error) {
+    console.error('Error al cargar mascotas:', error);
+  }
+};
 
-  const fetchCitas = async () => {
-    try {
-      const response = await fetch(`${API_URL}/citas`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCitas(data.filter((c: Cita) => c.id));
-      }
-    } catch (error) {
-      console.error('Error al cargar citas:', error);
+const fetchCitas = async () => {
+  try {
+    const response = await fetch(`${API_URL}/citas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const filtered = data.filter((c: Cita) => c.id);
+      setCitas(prev => JSON.stringify(prev) === JSON.stringify(filtered) ? prev : filtered);
     }
-  };
+  } catch (error) {
+    console.error('Error al cargar citas:', error);
+  }
+};
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -52,6 +53,7 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+  if (!token) return;
   fetchCitas();
   fetchMascotas();
 
@@ -61,7 +63,7 @@ export default function HomeScreen() {
   }, 10000);
 
   return () => clearInterval(interval);
-}, []);
+}, [token]);
 
   const citasPendientes = citas.filter(c => c.estado === 'pendiente');
   const citasConfirmadas = citas.filter(c => c.estado === 'confirmada');

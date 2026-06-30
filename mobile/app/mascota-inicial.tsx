@@ -11,7 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 
 export default function MascotaInicialScreen() {
   const router = useRouter();
-  const { token, refreshMascotas } = useAuth();
+  const { token, refreshMascotas, logout } = useAuth();
   const [nombre, setNombre] = useState('');
   const [especie, setEspecie] = useState('');
   const [raza, setRaza] = useState('');
@@ -59,12 +59,15 @@ export default function MascotaInicialScreen() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        await refreshMascotas();
-        router.replace('/(tabs)');
-      } else {
-        setErrors({ general: data.error || 'Error al registrar mascota' });
-      }
+     if (response.ok) {
+  await refreshMascotas();
+  router.replace('/(tabs)');
+} else if (response.status === 404 || response.status === 401) {
+  await logout();
+} else {
+  setErrors({ general: data.error || 'Error al registrar mascota' });
+}
+
     } catch (error) {
       setErrors({ general: 'Error de conexión' });
     } finally {
