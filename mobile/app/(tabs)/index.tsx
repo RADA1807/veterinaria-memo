@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, RefreshControl, Image
+  TouchableOpacity, RefreshControl, Image, Linking
 } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, API_URL } from '../../config';
@@ -108,18 +109,23 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Próxima cita</Text>
         {proximaCita ? (
           <View style={styles.citaCard}>
-            <View style={styles.citaHeader}>
-              <Text style={styles.citaMascota}>{proximaCita.mascota_nombre}</Text>
-              <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(proximaCita.estado) + '20' }]}>
-                <Text style={[styles.estadoText, { color: getEstadoColor(proximaCita.estado) }]}>
-                  {getEstadoLabel(proximaCita.estado)}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.citaServicio}>{proximaCita.servicio}</Text>
-            <Text style={styles.citaFecha}>{proximaCita.fecha?.split('T')[0]} · {proximaCita.hora}</Text>
-            <Text style={styles.citaMotivo}>{proximaCita.motivo}</Text>
-          </View>
+  <View style={styles.citaHeader}>
+    <Text style={styles.citaMascota}>{proximaCita.mascota_nombre}</Text>
+    <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(proximaCita.estado) + '20' }]}>
+      <Text style={[styles.estadoText, { color: getEstadoColor(proximaCita.estado) }]}>
+        {getEstadoLabel(proximaCita.estado)}
+      </Text>
+    </View>
+  </View>
+  <Text style={styles.citaServicio}>{proximaCita.servicio}</Text>
+  <Text style={styles.citaFecha}>{proximaCita.fecha?.split('T')[0]} · {proximaCita.hora}</Text>
+  <Text style={styles.citaMotivo}>{proximaCita.motivo}</Text>
+  {proximaCita.estado === 'pendiente' && (
+    <View style={styles.pendienteInfo}>
+      <Text style={styles.pendienteText}>⏳ Tu cita está siendo revisada. Espera la confirmación del equipo de Veterinaria Memo.</Text>
+    </View>
+  )}
+</View>
         ) : (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>📅</Text>
@@ -207,12 +213,38 @@ export default function HomeScreen() {
       </View>
 
       {/* Info veterinaria */}
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Veterinaria Memo</Text>
-        <Text style={styles.infoText}>📞 8703-4402</Text>
-        <Text style={styles.infoText}>Lunes a Sábado: 7:00am – 6:00pm</Text>
-        <Text style={styles.infoText}>📍 Costa Rica</Text>
-      </View>
+<View style={styles.infoCard}>
+  <Text style={styles.infoTitle}>Veterinaria Memo</Text>
+  <Text style={styles.infoText}>📞 2494-8816</Text>
+  <Text style={styles.infoText}>Lunes a Sábado: 7:00am – 6:00pm</Text>
+  <Text style={styles.infoText}>📍 125 mts este del Hospital San Francisco de Asís, Grecia</Text>
+
+  <View style={styles.infoIcons}>
+  <TouchableOpacity
+    style={styles.infoIconBtn}
+    onPress={() => Linking.openURL('https://wa.me/50688665263')}
+  >
+    <FontAwesome5 name="whatsapp" size={22} color={COLORS.white} />
+    <Text style={styles.infoIconText}>WhatsApp</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.infoIconBtn}
+    onPress={() => Linking.openURL('https://waze.com/ul?q=Hospital%20San%20Francisco%20de%20Asis%20Grecia%20Costa%20Rica')}
+  >
+    <FontAwesome5 name="waze" size={22} color={COLORS.white} />
+    <Text style={styles.infoIconText}>Waze</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.infoIconBtn}
+    onPress={() => Linking.openURL('mailto:alimentosmemo@gmail.com')}
+  >
+    <FontAwesome5 name="envelope" size={22} color={COLORS.white} />
+    <Text style={styles.infoIconText}>Correo</Text>
+  </TouchableOpacity>
+</View>
+</View>
 
     </ScrollView>
   );
@@ -326,4 +358,24 @@ quickText: { fontSize: 11, color: COLORS.text, fontWeight: '500', textAlign: 'ce
     color: 'rgba(255,255,255,0.9)',
     marginBottom: 4,
   },
+  infoIcons: {
+  flexDirection: 'row',
+  gap: 16,
+  marginTop: 14,
+},
+infoIconBtn: {
+    alignItems: 'center',
+  gap: 4,
+},
+infoIconEmoji: { fontSize: 24, marginBottom: 2 },
+infoIconText: { fontSize: 11, color: COLORS.white, fontWeight: '500' },
+pendienteInfo: {
+  marginTop: 8,
+  backgroundColor: '#FEF3E2',
+  borderRadius: 8,
+  padding: 10,
+  borderLeftWidth: 3,
+  borderLeftColor: COLORS.warning,
+},
+pendienteText: { fontSize: 12, color: '#92400E', fontWeight: '500' },
 });
