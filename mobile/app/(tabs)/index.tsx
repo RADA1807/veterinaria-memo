@@ -110,7 +110,7 @@ const fetchCitas = async () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Próxima cita</Text>
         {proximaCita ? (
-          <View style={styles.citaCard}>
+  <TouchableOpacity style={styles.citaCard} onPress={() => router.push('/(tabs)/citas')}>
   <View style={styles.citaHeader}>
     <Text style={styles.citaMascota}>{proximaCita.mascota_nombre}</Text>
     <View style={[styles.estadoBadge, { backgroundColor: getEstadoColor(proximaCita.estado) + '20' }]}>
@@ -127,7 +127,7 @@ const fetchCitas = async () => {
       <Text style={styles.pendienteText}>⏳ Tu cita está siendo revisada. Espera la confirmación del equipo de Veterinaria Memo.</Text>
     </View>
   )}
-</View>
+</TouchableOpacity>
         ) : (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>📅</Text>
@@ -154,7 +154,7 @@ const fetchCitas = async () => {
         {mascotas.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {mascotas.map((mascota) => (
-              <View key={mascota.id} style={styles.mascotaCard}>
+  <TouchableOpacity key={mascota.id} style={styles.mascotaCard} onPress={() => router.push(`/mascotas/edit/${mascota.id}`)}>
                 {mascota.foto ? (
                   <Image
                     source={{ uri: mascota.foto }}
@@ -168,8 +168,8 @@ const fetchCitas = async () => {
                 <Text style={styles.mascotaNombre}>{mascota.nombre}</Text>
                 <Text style={styles.mascotaEspecie}>{mascota.especie}</Text>
                 <Text style={styles.mascotaRaza}>{mascota.raza}</Text>
-              </View>
-            ))}
+  </TouchableOpacity>
+))}
           </ScrollView>
         ) : (
           <View style={styles.emptyCard}>
