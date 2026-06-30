@@ -57,11 +57,16 @@ useEffect(() => {
   const stillValid = await refreshMascotas(storedToken);
 
   if (stillValid) {
-    const storedMascotas = await AsyncStorage.getItem('mascotas');
-    if (!storedMascotas || JSON.parse(storedMascotas).length === 0) {
+  const mascotasResponse = await fetch(`${API_URL}/mascotas`, {
+    headers: { Authorization: `Bearer ${storedToken}` },
+  });
+  if (mascotasResponse.ok) {
+    const mascotasData = await mascotasResponse.json();
+    if (!mascotasData || mascotasData.length === 0) {
       router.replace('/mascota-inicial');
     }
   }
+}
 }
     } catch (error) {
       console.error('Error cargando sesión:', error);
