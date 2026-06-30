@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const verifyToken = require('../middlewares/verifyToken');
 const rateLimit = require('express-rate-limit');
+const { enviarCodigoRecuperacion } = require('../utils/mailer');
 
 // 🔒 Rate limiting para login y register
 const authLimiter = rateLimit({
@@ -199,6 +200,92 @@ router.post('/login', authLimiter, async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error en login:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// 🔑 Solicitar recuperación de contraseña
+router.post('/recuperar-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'El correo es obligatorio' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id, nombre FROM usuarios WHERE email = ?',
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'No existe una cuenta con ese correo' });
+    }
+
+    const usuario = rows[0];
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiracion = new Date(Date.now() + 15 * 60 * 1000);
+
+    await db.query(
+      'UPDATE usuarios SET reset_codigo=?, reset_expiracion=? WHERE id=?',
+      [codigo, expiracion, usuario.id]
+    );
+
+    const enviado = await enviarCodigoRecuperacion(email, codigo, usuario.nombre);
+
+    if (!enviado) {
+      return res.status(500).json({ error: 'Error al enviar el correo' });
+    }
+
+    res.json({ message: '✅ Código enviado a tu correo' });
+  } catch (error) {
+    console.error('❌ Error en recuperar-password:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// 🔑 Verificar código y cambiar contraseña
+router.post('/reset-password', async (req, res) => {
+  const { email, codigo, nuevaPassword } = req.body;
+
+  if (!email || !codigo || !nuevaPassword) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+
+  if (nuevaPassword.length < 6) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id, reset_codigo, reset_expiracion FROM usuarios WHERE email = ?',
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const usuario = rows[0];
+
+    if (usuario.reset_codigo !== codigo) {
+      return res.status(400).json({ error: 'Código incorrecto' });
+    }
+
+    if (new Date() > new Date(usuario.reset_expiracion)) {
+      return res.status(400).json({ error: 'El código ha expirado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
+
+    await db.query(
+      'UPDATE usuarios SET password=?, reset_codigo=NULL, reset_expiracion=NULL WHERE id=?',
+      [hashedPassword, usuario.id]
+    );
+
+    res.json({ message: '✅ Contraseña actualizada correctamente' });
+  } catch (error) {
+    console.error('❌ Error en reset-password:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
