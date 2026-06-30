@@ -124,6 +124,12 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity onPress={() => router.push('/recuperar-password')} style={{ marginTop: 12 }}>
+            <Text style={styles.link}>
+              ¿Olvidaste tu contraseña? <Text style={styles.linkBold}>Recupérala aquí</Text>
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => router.replace('/')} style={styles.backBtn}>
             <Text style={styles.backText}>← Volver al inicio</Text>
           </TouchableOpacity>
