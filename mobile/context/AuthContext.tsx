@@ -20,7 +20,7 @@ interface AuthContextType {
   register: (nombre: string, apellido: string, cedula: string, email: string, telefono: string, password: string, direccion?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateMascotas: (mascotas: Mascota[]) => void;
-  refreshMascotas: () => Promise<void>;
+  refreshMascotas: (tk?: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -54,12 +54,13 @@ useEffect(() => {
   setToken(storedToken);
   const usuarioParsed = JSON.parse(storedUsuario);
   setUsuario(usuarioParsed);
-  const mascotasData = await refreshMascotas(storedToken);
-  
-  // Si no tiene mascotas redirigir a mascota-inicial
-  const storedMascotas = await AsyncStorage.getItem('mascotas');
-  if (!storedMascotas || JSON.parse(storedMascotas).length === 0) {
-    router.replace('/mascota-inicial');
+  const stillValid = await refreshMascotas(storedToken);
+
+  if (stillValid) {
+    const storedMascotas = await AsyncStorage.getItem('mascotas');
+    if (!storedMascotas || JSON.parse(storedMascotas).length === 0) {
+      router.replace('/mascota-inicial');
+    }
   }
 }
     } catch (error) {
@@ -70,24 +71,28 @@ useEffect(() => {
   };
 
   const refreshMascotas = async (tk?: string) => {
-    try {
-      const activeToken = tk || token;
-      if (!activeToken) return;
+  try {
+    const activeToken = tk || token;
+    if (!activeToken) return false;
 
-      const response = await fetch(`${API_URL}/mascotas`, {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
+    const response = await fetch(`${API_URL}/mascotas`, {
+      headers: { Authorization: `Bearer ${activeToken}` },
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMascotas(data);
-      } else if (response.status === 401) {
-        await logout();
-      }
-    } catch (error) {
-      console.error('Error refreshing mascotas:', error);
+    if (response.ok) {
+      const data = await response.json();
+      setMascotas(prev => JSON.stringify(prev) === JSON.stringify(data) ? prev : data);
+      return true;
+    } else if (response.status === 401 || response.status === 404) {
+      await logout();
+      return false;
     }
-  };
+    return true;
+  } catch (error) {
+    console.error('Error refreshing mascotas:', error);
+    return true;
+  }
+};
 
   const login = async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/login`, {

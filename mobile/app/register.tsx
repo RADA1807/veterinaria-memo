@@ -29,6 +29,7 @@ export default function RegisterScreen() {
     cedula?: string;
     email?: string;
     telefono?: string;
+    direccion?: string;
     password?: string;
     confirmPassword?: string;
     general?: string;
@@ -40,9 +41,11 @@ export default function RegisterScreen() {
     else if (nombre.length < 2) newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
     if (!apellido) newErrors.apellido = 'El apellido es obligatorio';
     else if (apellido.length < 2) newErrors.apellido = 'El apellido debe tener al menos 2 caracteres';
+    if (!cedula) newErrors.cedula = 'La cédula es obligatoria';
     if (!email) newErrors.email = 'El correo es obligatorio';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Correo inválido';
     if (!telefono) newErrors.telefono = 'El teléfono es obligatorio';
+    if (!direccion) newErrors.direccion = 'La dirección es obligatoria';
     if (!password) newErrors.password = 'La contraseña es obligatoria';
     else if (password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
     if (!confirmPassword) newErrors.confirmPassword = 'Confirma tu contraseña';
@@ -100,7 +103,7 @@ export default function RegisterScreen() {
             <Text style={styles.label}>Nombre</Text>
             <TextInput
               style={[styles.input, errors.nombre ? styles.inputError : null]}
-              placeholder="Tu nombre completo"
+              placeholder="Tu nombre "
               value={nombre}
               onChangeText={setNombre}
               placeholderTextColor={COLORS.textSecondary}
@@ -161,15 +164,16 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Dirección</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tu dirección"
-              value={direccion}
-              onChangeText={setDireccion}
-              placeholderTextColor={COLORS.textSecondary}
-            />
-          </View>
+  <Text style={styles.label}>Dirección</Text>
+  <TextInput
+    style={[styles.input, errors.direccion ? styles.inputError : null]}
+    placeholder="Tu dirección"
+    value={direccion}
+    onChangeText={setDireccion}
+    placeholderTextColor={COLORS.textSecondary}
+  />
+  {errors.direccion && <Text style={styles.errorText}>{errors.direccion}</Text>}
+</View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Contraseña</Text>
