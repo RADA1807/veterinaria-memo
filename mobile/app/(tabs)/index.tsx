@@ -51,16 +51,16 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-  fetchCitas();
-  fetchMascotas();
-
-  const interval = setInterval(() => {
     fetchCitas();
     fetchMascotas();
-  }, 10000);
 
-  return () => clearInterval(interval);
-}, []);
+    const interval = setInterval(() => {
+      fetchCitas();
+      fetchMascotas();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const citasPendientes = citas.filter(c => c.estado === 'pendiente');
   const citasConfirmadas = citas.filter(c => c.estado === 'confirmada');
@@ -124,12 +124,7 @@ export default function HomeScreen() {
           <View style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>📅</Text>
             <Text style={styles.emptyText}>No tienes citas próximas</Text>
-            <TouchableOpacity
-              style={styles.emptyButton}
-              onPress={() => router.push('/(tabs)/citas')}
-            >
-              <Text style={styles.emptyButtonText}>Solicitar cita</Text>
-            </TouchableOpacity>
+
           </View>
         )}
       </View>
