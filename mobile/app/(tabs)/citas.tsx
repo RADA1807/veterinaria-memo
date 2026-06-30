@@ -182,15 +182,20 @@ export default function CitasScreen() {
               </View>
 
               <View style={styles.cardBody}>
-                <Text style={styles.cardServicio}>{getServicioEmoji(item.servicio)} {item.servicio}</Text>
-                <Text style={styles.cardFecha}>📅 {item.fecha?.toString().split('T')[0]} · ⏰ {item.hora?.toString().slice(0, 5)}</Text>
-                <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
-                {(item as any).nota_admin && (item as any).nota_admin.trim() !== '' && (
-                  <View style={styles.notaAdmin}>
-                    <Text style={styles.notaAdminText}>💬 {(item as any).nota_admin}</Text>
-                  </View>
-                )}
-              </View>
+  <Text style={styles.cardServicio}>{getServicioEmoji(item.servicio)} {item.servicio}</Text>
+  <Text style={styles.cardFecha}>📅 {item.fecha?.toString().split('T')[0]} · ⏰ {item.hora?.toString().slice(0, 5)}</Text>
+  <Text style={styles.cardMotivo}>📝 {item.motivo}</Text>
+  {item.estado === 'pendiente' && (
+    <View style={styles.pendienteInfo}>
+      <Text style={styles.pendienteText}>⏳ Tu cita está siendo revisada. Espera la confirmación del equipo de Veterinaria Memo.</Text>
+    </View>
+  )}
+  {(item as any).nota_admin && (item as any).nota_admin.trim() !== '' && (
+    <View style={styles.notaAdmin}>
+      <Text style={styles.notaAdminText}>💬 {(item as any).nota_admin}</Text>
+    </View>
+  )}
+</View>
 
               {(item.estado === 'pendiente' || item.estado === 'confirmada') && (
   <View style={styles.cardActions}>
@@ -295,4 +300,13 @@ const styles = StyleSheet.create({
     borderLeftColor: COLORS.teal,
   },
   notaAdminText: { fontSize: 13, color: COLORS.primary, fontWeight: '500' },
+  pendienteInfo: {
+  marginTop: 8,
+  backgroundColor: '#FEF3E2',
+  borderRadius: 8,
+  padding: 10,
+  borderLeftWidth: 3,
+  borderLeftColor: COLORS.warning,
+},
+pendienteText: { fontSize: 12, color: '#92400E', fontWeight: '500' },
 });
