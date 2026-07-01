@@ -47,7 +47,7 @@ export default function LoginPage() {
           <img
             src="https://veterinariamemo.com/wp-content/uploads/2023/02/SINFONDO-1024x1024.png"
             alt="Veterinaria Memo"
-            className="w-40 h-40 object-contain drop-shadow-lg"
+            className="w-64 h-64 object-contain drop-shadow-lg"
           />
           <span className="text-white font-display text-2xl font-semibold">Veterinaria Memo</span>
         </div>
