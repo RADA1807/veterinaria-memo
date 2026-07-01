@@ -232,7 +232,7 @@ const fetchCitas = async () => {
 
   <TouchableOpacity
     style={styles.infoIconBtn}
-    onPress={() => Linking.openURL('https://waze.com/ul?q=Hospital%20San%20Francisco%20de%20Asis%20Grecia%20Costa%20Rica')}
+    onPress={() => Linking.openURL('https://waze.com/ul?ll=10.0725061,-84.3145592&navigate=yes')}
   >
     <FontAwesome5 name="waze" size={22} color={COLORS.white} />
     <Text style={styles.infoIconText}>Waze</Text>
