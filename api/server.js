@@ -12,6 +12,7 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:8081',
     'http://localhost:19006',
+    'https://veterinaria-memo-72ca.vercel.app',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
