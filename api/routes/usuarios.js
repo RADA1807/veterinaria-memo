@@ -152,13 +152,13 @@ router.post('/login', authLimiter, async (req, res) => {
       [email]
     );
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
 
     const usuario = rows[0];
     const esValido = await bcrypt.compare(password, usuario.password);
     if (!esValido) {
-      return res.status(401).json({ error: 'Contraseña incorrecta' });
+      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
     }
 
     let propietarioId = null;
